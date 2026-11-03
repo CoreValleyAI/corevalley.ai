@@ -75,18 +75,22 @@ export function UseCaseCarousel({
     const measure = () => {
       raf = 0;
       const pad = parseFloat(getComputedStyle(t).scrollPaddingLeft) || 0;
-      const line = t.scrollLeft + pad;
+      const scroll = t.scrollLeft;
+      const view = t.clientWidth;
+      const line = scroll + pad;
+      // Every read before any write: one layout, not one per card.
+      const boxes = cards().map((c) => ({ c, x: c.offsetLeft, w: Math.max(1, c.offsetWidth) }));
       let best = 0;
       let bestD = Infinity;
-      cards().forEach((c, i) => {
-        const d = (c.offsetLeft - line) / Math.max(1, c.offsetWidth);
+      boxes.forEach(({ c, x, w }, i) => {
+        const d = (x - line) / w;
         // A card partly out of view eases back by how much of it is
         // hidden (never dimmed: its text keeps its contrast); cards wholly
         // in view stay as they are.
         if (!still) {
-          const left = c.offsetLeft - t.scrollLeft;
-          const shown = Math.min(left + c.offsetWidth, t.clientWidth) - Math.max(left, 0);
-          const hidden = 1 - Math.max(0, Math.min(1, shown / c.offsetWidth));
+          const left = x - scroll;
+          const shown = Math.min(left + w, view) - Math.max(left, 0);
+          const hidden = 1 - Math.max(0, Math.min(1, shown / w));
           c.style.setProperty("--s", (1 - hidden * 0.06).toFixed(4));
           c.style.transformOrigin = left < 0 ? "right center" : "left center";
         }

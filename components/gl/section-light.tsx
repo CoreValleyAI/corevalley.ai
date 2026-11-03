@@ -10,7 +10,8 @@
  *
  * Where it can't or shouldn't run — no WebGL2, a slow device or Save-Data,
  * more contrast, forced colours, or `?glass=css` — the panes keep their CSS
- * glass over a still, soft light instead. Reduced transparency (often an
+ * glass over a still, soft light instead. The still light is also what shows
+ * before the scene's first frame, and after it is released. Reduced transparency (often an
  * OS-wide "transparency effects" switch) is treated as the hero's glass
  * treats it: the scene's glass already holds text contrast pixel by pixel.
  *
@@ -55,6 +56,11 @@ export function SectionLight({ className, span }: { className?: string; span?: "
   const gl = useSceneGlass();
   const ref = useRef<HTMLDivElement>(null);
 
+  // The scene switched off (a setting changed): the still light comes back.
+  useEffect(() => {
+    if (!gl && ref.current) delete ref.current.dataset.gl;
+  }, [gl]);
+
   // Inside a scroller, the light spans all of what scrolls.
   useEffect(() => {
     const el = ref.current;
@@ -77,6 +83,8 @@ export function SectionLight({ className, span }: { className?: string; span?: "
       aria-hidden="true"
       className={cn("section-light pointer-events-none absolute -z-10", span === "scroll" ? "top-0 left-0" : "inset-0", className)}
     >
+      {/* The still light until the scene's first frame (and wherever it can't run). */}
+      <div className="section-light__still absolute inset-0" />
       {gl ? (
         <GLStage
           load={load}
@@ -95,9 +103,7 @@ export function SectionLight({ className, span }: { className?: string; span?: "
             if (!shown && host) for (const p of host.querySelectorAll<HTMLElement>("[data-glass]")) delete p.dataset.glass;
           }}
         />
-      ) : (
-        <div className="section-light__still absolute inset-0" />
-      )}
+      ) : null}
     </div>
   );
 }

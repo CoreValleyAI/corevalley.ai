@@ -246,3 +246,10 @@
 :root[data-theme="light"] .section-light__still {
   background: radial-gradient(42rem 30rem at 30% 45%, color-mix(in oklch, var(--hydro) 7%, transparent), transparent 70%);
 }
+/* Under a running scene, the scene's light takes over. */
+.section-light__still {
+  transition: opacity 600ms ease-out;
+}
+.section-light[data-gl="on"] .section-light__still {
+  opacity: 0;
+}
