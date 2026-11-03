@@ -1,104 +1,62 @@
 /**
- * "Everything AI needs, run for you" (home, What we do): what running AI
- * takes, row by row — on your own on the left, with CoreValley on the
- * right — each row drawn as the real object (what-art.tsx).
- *
- * As the list is read (ScrollSteps, --step), each row is handed over: its
- * box ticks, the link to the right lights and flows, and the CoreValley
- * side comes forward. Without JS or with reduced motion every row is shown
- * handed over. Server markup throughout; the frame only sets --step.
+ * "You bring the idea. We run everything else." (home, What we do): one
+ * statement and the four things we run, on a single pane of liquid glass,
+ * sized to sit in one screen. The glyphs light on hover; nothing else moves.
  */
-import { WhatArt } from "@/components/home/what-art";
-import { ScrollSteps } from "@/components/motion/frames";
-import { NoteRef, type Notes } from "@/components/system/fact";
+import { DotGlyph } from "@/components/system/dot-glyph";
 import { GlassLight } from "@/components/system/glass-light";
-import { SectionHead } from "@/components/system/section";
+import { Kicker } from "@/components/system/kicker";
 import { TextLink } from "@/components/system/text-link";
 import { HOME } from "@/copy/en/home";
-import { v } from "@/lib/facts";
+import { cn } from "@/lib/cn";
 
-function Tick({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 16 16" className={className} aria-hidden="true" focusable="false">
-      <path d="M3.5 8.5 L6.8 11.5 L12.5 4.5" pathLength={1} className="what-tick fill-none" strokeWidth="1.8" />
-    </svg>
-  );
-}
-
-export function WhatSection({ notes }: { notes: Notes }) {
+export function WhatSection() {
   const w = HOME.what;
   return (
     <section id="what" aria-labelledby="what-title" className="section-y relative isolate scroll-mt-[var(--header-h)]">
-      <GlassLight quiet />
-      <div className="container-page flex flex-col gap-12 md:gap-14">
-        <SectionHead id="what-title" kicker={w.kicker} title={w.title} continuation={w.continuation} lead={w.lead} />
+      <GlassLight variant="a" />
+      <div className="container-page flex flex-col items-center gap-12 text-center md:gap-16">
+        <header className="flex flex-col items-center gap-5">
+          <Kicker>{w.kicker}</Kicker>
+          <h2 id="what-title" className="type-title-1 max-w-[24ch] text-balance" data-reveal>
+            {w.title}
+            <br className="hidden md:block" /> <span className="text-ink-3">{w.continuation}</span>
+          </h2>
+          <p className="type-lead measure text-ink-2" data-reveal style={{ "--i": 1 } as React.CSSProperties}>
+            {w.lead}
+          </p>
+        </header>
 
-        <ScrollSteps steps={w.rows.length} from={0} to={0.9} className="what">
-          <div aria-hidden="true" className="what-head">
-            <p className="type-kicker text-ink-3">{w.yourself}</p>
-            <span />
-            <p className="type-kicker text-hydro-ink light:text-hydro">{w.withUs}</p>
-          </div>
+        <ul
+          data-refract
+          data-refract-bezel="22"
+          className="lg grid w-full max-w-[68rem] grid-cols-1 rounded-panel text-left sm:grid-cols-2 lg:grid-cols-4"
+        >
+          {w.items.map((it, i) => (
+            <li
+              key={it.title}
+              className={cn(
+                "group flex flex-col gap-5 p-6 md:p-8",
+                i > 0 && "border-t border-ink/10",
+                i === 1 && "sm:border-t-0 sm:border-l",
+                i === 2 && "sm:border-l-0 lg:border-t-0 lg:border-l",
+                i === 3 && "sm:border-l lg:border-t-0",
+              )}
+              data-reveal
+              style={{ "--i": i } as React.CSSProperties}
+            >
+              <DotGlyph name={it.glyph} className="size-10" />
+              <span className="flex flex-col gap-1.5">
+                <h3 className="type-title-3 text-ink">{it.title}</h3>
+                <p className="type-small text-ink-2">{it.body}</p>
+              </span>
+            </li>
+          ))}
+        </ul>
 
-          <ol className="what-rows">
-            {w.rows.map((r, i) => (
-              <li key={r.id} className="what-row" style={{ "--row": i } as React.CSSProperties}>
-                <div className="what-self">
-                  <span aria-hidden="true" className="what-box">
-                    <Tick className="size-3.5" />
-                  </span>
-                  <WhatArt part={r.id} className="what-art" />
-                  <div className="flex min-w-0 flex-col gap-1">
-                    <h3 className="type-body font-semibold text-ink">{r.name}</h3>
-                    <p className="type-small text-ink-2">
-                      <span className="what-tag">{w.yourself}: </span>
-                      {r.yourself}
-                    </p>
-                  </div>
-                </div>
-
-                <svg viewBox="0 0 80 24" preserveAspectRatio="none" className="what-link" aria-hidden="true" focusable="false">
-                  <path d="M2 12 H 72" className="what-link__base" />
-                  <path d="M2 12 H 72" className="what-link__flow" />
-                  <path d="M68 7 L 74 12 L 68 17" className="what-link__head" />
-                </svg>
-
-                <div className="what-us">
-                  <span aria-hidden="true" className="what-dot">
-                    <Tick className="size-3.5" />
-                  </span>
-                  <p className="type-small text-ink">
-                    <span className="what-tag what-tag--us">{w.withUs}: </span>
-                    {r.withUs}
-                    {r.note ? <NoteRef notes={notes} id={r.note} /> : null}
-                    {r.href ? (
-                      <>
-                        {" "}
-                        <TextLink href={r.href} arrow className="type-small whitespace-nowrap">
-                          <span className="sr-only">{r.name}: </span>More
-                        </TextLink>
-                      </>
-                    ) : null}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ol>
-
-          <div className="what-foot">
-            <p className="type-small text-ink-3">{w.before.yourself}</p>
-            <span />
-            <p className="type-small font-medium text-ink">
-              {w.before.withUs} A plan and a firm quote {v("contact.reply").toLowerCase()}.
-            </p>
-          </div>
-        </ScrollSteps>
-
-        <div>
-          <TextLink href={w.link.href} arrow>
-            {w.link.label}
-          </TextLink>
-        </div>
+        <TextLink href={w.link.href} arrow>
+          {w.link.label}
+        </TextLink>
       </div>
     </section>
   );

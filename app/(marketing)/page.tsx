@@ -1,10 +1,10 @@
 import { AssistantSection } from "@/components/home/assistant-section";
+import { BillingSection } from "@/components/home/billing-section";
 import { BuiltOn } from "@/components/home/built-on";
 import { GrowSection } from "@/components/home/grow-section";
 import { Hero } from "@/components/home/hero";
 import { HowSection } from "@/components/home/how-section";
 import { ProtectionMap } from "@/components/home/protection-map";
-import { ReceiptSection } from "@/components/home/receipt-section";
 import { Climb } from "@/components/home/sections";
 import { UptimeSection } from "@/components/home/uptime-section";
 import { WhatSection } from "@/components/home/what-section";
@@ -31,13 +31,13 @@ export default function HomePage() {
   const stories = HOME_STORIES.map((slug) => findUseCase(slug)!);
   const billing = fact("billing.unit");
   const notes = createNotes([
-    "place.uptime",
     {
-      key: "receipt",
-      text: `Sample jobs and times, for illustration. "By the hour" rounds each run up to the next full hour; per-second billing has a minimum of ${v("billing.minimum")} per run. Rates are being finalised; every request gets a firm quote in rupees.`,
+      key: "minimum",
+      text: `Per-second billing has a minimum of ${v("billing.minimum")} per run. Rates are being finalised; every request gets a firm quote in rupees.`,
       source: billing.source,
       asOf: billing.asOf,
     },
+    "place.uptime",
     "place.uptimeMinutes",
   ]);
 
@@ -46,8 +46,8 @@ export default function HomePage() {
       <Hero />
       <BuiltOn />
 
-      {/* What running AI takes, and what we run for you. */}
-      <WhatSection notes={notes} />
+      {/* You bring the idea; we run everything else. */}
+      <WhatSection />
 
       {/* Training, fine-tuning, inference, in plain words. */}
       <WordsSection />
@@ -86,11 +86,11 @@ export default function HomePage() {
             {HOME.cases.link.label}
           </TextLink>
         </div>
-        <UseCaseCarousel cases={stories} label="Use cases" />
+        <UseCaseCarousel cases={stories} label="Use cases" pictures={false} />
       </section>
 
-      {/* Billing, as the receipt a job produces. */}
-      <ReceiptSection notes={notes} />
+      {/* Billing in three words. */}
+      <BillingSection notes={notes} />
 
       {/* The facility's uptime commitment, as time. */}
       <UptimeSection notes={notes} />

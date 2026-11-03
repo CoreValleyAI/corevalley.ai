@@ -29,10 +29,14 @@ export function UseCaseCarousel({
   label = "Use cases",
   size = "md",
   linkBase = "/use-cases",
+  pictures = true,
 }: {
   cases: UseCase[];
   label?: string;
   size?: "md" | "lg";
+  /** Each card's picture of the outcome; off on the home page, where the
+      cards are words on glass and the pictures wait on /use-cases. */
+  pictures?: boolean;
   /** Where a card's link goes (its #slug is appended). */
   linkBase?: string;
 }) {
@@ -172,14 +176,16 @@ export function UseCaseCarousel({
               data-refract-bezel="18"
               className="lg lg-card group relative flex h-full flex-col overflow-hidden rounded-panel"
             >
-              <Vignette
-                art={u.art}
-                variant={variantFor(u.slug)}
-                className="aspect-[16/10] w-full border-b border-line"
-              />
-              <div className="flex flex-1 flex-col gap-3 p-6 md:p-7">
+              {pictures ? (
+                <Vignette
+                  art={u.art}
+                  variant={variantFor(u.slug)}
+                  className="aspect-[16/10] w-full border-b border-line"
+                />
+              ) : null}
+              <div className={cn("flex flex-1 flex-col gap-3 p-6 md:p-7", !pictures && "min-h-[17rem] gap-4 md:p-8")}>
                 <p className="type-kicker text-ink-3">{u.sector}</p>
-                <h3 className="type-title-3 text-balance">
+                <h3 className={cn("text-balance", pictures ? "type-title-3" : "type-title-2")}>
                   <AppLink
                     href={`${linkBase}#${u.slug}`}
                     className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
