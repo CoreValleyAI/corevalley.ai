@@ -102,6 +102,7 @@ export function MiniGpu({
   w = 120,
   slices,
   lit,
+  outline = false,
   className,
 }: {
   x: number;
@@ -111,6 +112,8 @@ export function MiniGpu({
   slices?: number;
   /** How many instances (or, without slices, whether the die) are lit. */
   lit?: number;
+  /** Small or background copies: just the board, the package and the die. */
+  outline?: boolean;
   className?: string;
 }) {
   const k = w / 120;
@@ -135,6 +138,16 @@ export function MiniGpu({
 
   const n = slices ?? 0;
   const dieLit = slices ? 0 : (lit ?? 1);
+  if (outline)
+    return (
+      <g className={cn("mini-gpu", className)}>
+        <rect x={X(0)} y={Y(2)} width={s(8)} height={s(60)} rx={s(1)} className="fill-bg-sunken stroke-line-strong" strokeWidth="0.8" />
+        <rect x={X(8)} y={Y(4)} width={s(108)} height={s(56)} rx={s(2)} className="fill-bg-raised stroke-line-strong" strokeWidth="1" />
+        <rect x={X(40)} y={Y(15)} width={s(46)} height={s(30)} rx={s(1.5)} className="fill-bg-sunken stroke-line-strong" strokeWidth="0.8" />
+        <path d={hbm} className="fill-bg-raised stroke-hydro" strokeWidth="0.6" />
+        <rect x={X(52)} y={Y(19)} width={s(22)} height={s(22)} rx={s(1)} className={dieLit ? "fill-hydro" : "fill-bg-raised"} />
+      </g>
+    );
   return (
     <g className={cn("mini-gpu", className)}>
       {/* Bracket with exhaust slots */}

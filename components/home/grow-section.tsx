@@ -57,10 +57,10 @@ function StationArt({ id }: { id: Station }) {
       {id === "whole" && (
         <g>
           <g opacity="0.45">
-            <MiniGpu x={34} y={2} w={104} />
+            <MiniGpu x={34} y={2} w={104} outline />
           </g>
           <g opacity="0.7">
-            <MiniGpu x={27} y={10} w={104} />
+            <MiniGpu x={27} y={10} w={104} outline />
           </g>
           <MiniGpu x={20} y={18} w={104} />
           <text x="80" y="92" textAnchor="middle" className="grow-label">
@@ -71,7 +71,7 @@ function StationArt({ id }: { id: Station }) {
       {id === "reserved" && (
         <g>
           {[0, 1, 2].map((i) => (
-            <MiniGpu key={i} x={12 + i * 44} y={30} w={42} />
+            <MiniGpu key={i} x={12 + i * 44} y={30} w={42} outline />
           ))}
           {/* The bracket that holds them for your organisation */}
           <path d="M10 26 V 20 H 144 V 26" className="grow-live fill-none" strokeWidth="1" />
