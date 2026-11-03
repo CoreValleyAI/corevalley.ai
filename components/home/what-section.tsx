@@ -16,7 +16,7 @@ export function WhatSection() {
     <section id="what" aria-labelledby="what-title" className="section-y relative isolate scroll-mt-[var(--header-h)]">
       <SectionLight />
       <div className="container-page flex flex-col items-center gap-12 text-center md:gap-16">
-        <header className="flex flex-col items-center gap-5" data-glass-keepout>
+        <header className="flex flex-col items-center gap-5">
           <Kicker>{w.kicker}</Kicker>
           <h2 id="what-title" className="type-title-1 max-w-[24ch] text-balance" data-reveal>
             {w.title}
@@ -55,7 +55,7 @@ export function WhatSection() {
           ))}
         </ul>
 
-        <TextLink href={w.link.href} arrow data-glass-keepout>
+        <TextLink href={w.link.href} arrow>
           {w.link.label}
         </TextLink>
       </div>

@@ -20,7 +20,7 @@ export function UptimeSection({ notes }: { notes: Notes }) {
     <section aria-labelledby="uptime-title" className="section-y relative isolate">
       <SectionLight />
       <div className="container-page grid items-center gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-20">
-        <div className="flex flex-col gap-8" data-glass-keepout>
+        <div className="flex flex-col gap-8">
           <SectionHead
             id="uptime-title"
             kicker={u.kicker}

@@ -12,9 +12,6 @@
  * ends. Page scrolling costs nothing: the canvas scrolls with the panes.
  * All reads happen at the start of a frame; nothing is written but the
  * hand-off.
- *
- * `[data-glass-keepout]` marks text that sits beside the panes, not on
- * them: a scene keeps its light low there (the text's contrast).
  */
 import type { GlassRect, GlassStyle } from "./glass";
 
@@ -45,14 +42,12 @@ export function createPanels(o: PanelsOptions) {
   const { canvas, host, invalidate } = o;
   const interactive = o.interactive ?? "a[href], button, .lg-card";
   const els = Array.from(host.querySelectorAll<HTMLElement>("[data-glass-panel]"));
-  const keepEls = Array.from(host.querySelectorAll<HTMLElement>("[data-glass-keepout]"));
   const kinds: PanelKind[] = els.map((el) => (el.dataset.glassPanel === "hydro" ? "hydro" : "clear"));
   const lifts = els.map(() => 0);
   const canLift = els.map((el) => el.matches(interactive));
   let radii: number[] = [];
   let rects: (GlassRect | null)[] = [];
   let opacities = els.map(() => 1);
-  let keepRects: Box[] = [];
   let drawn: Box | null = null;
   let dirty = true;
   let radiiDirty = true;
@@ -116,7 +111,6 @@ export function createPanels(o: PanelsOptions) {
   });
   ro.observe(host);
   for (const el of els) ro.observe(el);
-  for (const el of keepEls) ro.observe(el);
   void document.fonts?.ready.then(mark);
 
   /** An element's opacity as painted: its own times its ancestors' (to the host). */
@@ -165,10 +159,6 @@ export function createPanels(o: PanelsOptions) {
     });
     drawn = Number.isFinite(x0) ? { x: x0, y: y0, w: x1 - x0, h: y1 - y0 } : null;
     opacities = els.map((el, i) => (rects[i] ? paintedOpacity(el) : 0));
-    keepRects = keepEls.map((el) => {
-      const b = el.getBoundingClientRect();
-      return { x: (b.left - c.left) * k, y: (b.top - c.top) * k, w: b.width * k, h: b.height * k };
-    });
   };
 
   const handoff = (on: boolean) => {
@@ -220,8 +210,6 @@ export function createPanels(o: PanelsOptions) {
 
     /** The panes drawn last frame, as one box (drawing-buffer px). */
     bounds: () => drawn,
-    /** Text beside the panes (drawing-buffer px). */
-    keepOut: () => keepRects,
 
     handoff,
 

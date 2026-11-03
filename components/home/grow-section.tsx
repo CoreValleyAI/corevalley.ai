@@ -19,9 +19,7 @@ export function GrowSection() {
     <section aria-labelledby="grow-title" className="section-y relative isolate">
       <SectionLight />
       <div className="container-page flex flex-col gap-12">
-        <div data-glass-keepout>
-          <SectionHead id="grow-title" kicker={g.kicker} title={g.title} continuation={g.continuation} lead={g.lead} />
-        </div>
+        <SectionHead id="grow-title" kicker={g.kicker} title={g.title} continuation={g.continuation} lead={g.lead} />
         <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {g.stations.map((s, i) => {
             const product = productBySlug(s.product)!;
@@ -45,10 +43,7 @@ export function GrowSection() {
             );
           })}
         </ol>
-        <div
-          className="flex flex-col items-start justify-between gap-4 border-t border-line pt-6 md:flex-row md:items-center"
-          data-glass-keepout
-        >
+        <div className="flex flex-col items-start justify-between gap-4 border-t border-line pt-6 md:flex-row md:items-center">
           <p className="type-kicker text-ink-3">{g.same}</p>
           <TextLink href={`/products/${rope.slug}`} arrow>
             {g.rope.label}

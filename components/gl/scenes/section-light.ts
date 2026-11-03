@@ -7,10 +7,11 @@
  *
  * The light follows the pointer across the panes (a finger, while one is
  * down) and rests at the top left of them, the side the rim is lit from.
- * It is soft and low on black; over the text beside the panes (the
- * section's heading, `[data-glass-keepout]`) it dims further, so even the
- * quietest grey keeps its contrast. The canvas is otherwise transparent:
- * the page shows through, and a theme switch never flashes a block.
+ * It lives under the panes: soft on black, gathered to the box the panes
+ * make and fading within a short reach of it, so the headings and links
+ * beside them stay on near-black and even the quietest grey keeps its
+ * contrast. The canvas is otherwise transparent: the page shows through,
+ * and a theme switch never flashes a block.
  *
  * Nothing breathes or drifts: with the pointer still and nothing moving the
  * scene sleeps (frame() returns false) and costs nothing.
@@ -29,10 +30,11 @@ uniform vec2 u_pos;
 uniform float u_radius;
 uniform vec3 u_color;
 uniform float u_alpha;
-uniform vec4 u_keep[4];
-uniform int u_keepN;
-uniform float u_keepFloor;
-uniform float u_keepSoft;
+uniform vec4 u_box;        // the panes' box: x, y, w, h (px)
+uniform float u_boxR;
+uniform float u_hasBox;
+uniform float u_soft;      // how far beyond the box the light reaches
+uniform float u_floor;     // what is left of it beyond that
 uniform float u_edge;
 out vec4 o;
 
@@ -40,10 +42,10 @@ out vec4 o;
 // black never bands.
 float ign(vec2 p) { return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
 
-float boxDist(vec2 p, vec4 r) {
-  vec2 c = r.xy + r.zw * 0.5;
-  vec2 q = abs(p - c) - r.zw * 0.5;
-  return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0);
+float roundBox(vec2 p, vec4 b, float r) {
+  vec2 c = b.xy + b.zw * 0.5;
+  vec2 q = abs(p - c) - (b.zw * 0.5 - r);
+  return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;
 }
 
 void main() {
@@ -53,13 +55,11 @@ void main() {
   float r2 = u_radius * u_radius;
   // A core and a wide, faint halo.
   float a = (exp(-d2 / r2) + 0.35 * exp(-d2 / (9.0 * r2))) / 1.35 * u_alpha;
-  // Low over the text beside the panes.
-  float keep = 1.0;
-  for (int i = 0; i < 4; i++) {
-    if (i >= u_keepN) break;
-    keep = min(keep, mix(u_keepFloor, 1.0, smoothstep(0.0, u_keepSoft, boxDist(px, u_keep[i]))));
+  // Gathered under the panes: full inside their box, fading just beyond it.
+  if (u_hasBox > 0.5) {
+    float bd = max(roundBox(px, u_box, u_boxR), 0.0);
+    a *= mix(u_floor, 1.0, 1.0 - smoothstep(0.0, u_soft, bd));
   }
-  a *= keep;
   // Nothing at the canvas's top and bottom: sections never seam.
   a *= smoothstep(0.0, u_edge, px.y) * smoothstep(0.0, u_edge, u_res.y - px.y);
   a = clamp(a + (ign(gl_FragCoord.xy) - 0.5) / 255.0, 0.0, 1.0);
@@ -69,8 +69,8 @@ void main() {
 const LUMA = (c: RGB) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
 const decode = (x: number) => (x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4));
 
-/** The most the light may show over text, as a share of `alpha`: the
-    light's colour at that strength must stay below `maxLum` on black. */
+/** The most of the light allowed where text may sit, as a share of
+    `alpha`: its colour at that strength stays below `maxLum` on black. */
 function keepFloor(color: RGB, alpha: number, maxLum: number) {
   let lo = 0;
   let hi = 1;
@@ -102,7 +102,6 @@ export const createSectionLightScene: SceneFactory = async (ctx) => {
   let dpr = 1;
   let pos: { x: number; y: number } | null = null;
   let shown = false;
-  const keepCache = new Float32Array(16);
 
   return {
     resize(w, h, d) {
@@ -162,13 +161,8 @@ export const createSectionLightScene: SceneFactory = async (ctx) => {
       // How bright: soft on black, barely there on daylight (where dark text
       // needs the page light around it).
       const alpha = dark ? 0.36 : 0.07;
-      const floor = dark ? keepFloor(hydro, alpha, 0.022) : 1;
-      const keep = panels.keepOut();
-      const n = Math.min(4, keep.length);
-      for (let i = 0; i < n; i++) {
-        const r = keep[i]!;
-        keepCache.set([r.x, r.y, r.w, r.h], i * 4);
-      }
+      // Beyond the panes' reach, never brighter than the quietest text allows.
+      const floor = dark ? Math.min(0.3, keepFloor(hydro, alpha, 0.022)) : 1;
 
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       gl.viewport(0, 0, width, height);
@@ -182,10 +176,11 @@ export const createSectionLightScene: SceneFactory = async (ctx) => {
       gl.uniform1f(u("u_radius"), R);
       gl.uniform3f(u("u_color"), hydro[0], hydro[1], hydro[2]);
       gl.uniform1f(u("u_alpha"), alpha);
-      gl.uniform4fv(u("u_keep"), keepCache);
-      gl.uniform1i(u("u_keepN"), n);
-      gl.uniform1f(u("u_keepFloor"), floor);
-      gl.uniform1f(u("u_keepSoft"), 64 * dpr);
+      gl.uniform4f(u("u_box"), b?.x ?? 0, b?.y ?? 0, b?.w ?? 0, b?.h ?? 0);
+      gl.uniform1f(u("u_boxR"), Math.min(28 * dpr, (b?.w ?? 0) / 2, (b?.h ?? 0) / 2));
+      gl.uniform1f(u("u_hasBox"), b ? 1 : 0);
+      gl.uniform1f(u("u_soft"), 0.45 * R);
+      gl.uniform1f(u("u_floor"), floor);
       gl.uniform1f(u("u_edge"), 96 * dpr);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
       gl.bindVertexArray(null);

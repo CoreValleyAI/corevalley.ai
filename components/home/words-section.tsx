@@ -159,9 +159,7 @@ export function WordsSection() {
     <section aria-labelledby="words-title" className="section-y relative isolate">
       <SectionLight />
       <div className="container-page flex flex-col gap-12">
-        <div data-glass-keepout>
-          <SectionHead id="words-title" kicker={w.kicker} title={w.title} continuation={w.continuation} />
-        </div>
+        <SectionHead id="words-title" kicker={w.kicker} title={w.title} continuation={w.continuation} />
         <ul className="grid gap-4 md:grid-cols-3 lg:gap-5">
           {w.cards.map((c, i) => {
             const product = productBySlug(c.product)!;

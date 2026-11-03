@@ -16,9 +16,7 @@ export function BillingSection({ notes }: { notes: Notes }) {
     <section aria-labelledby="billing-title" className="section-y relative isolate">
       <SectionLight />
       <div className="container-page flex flex-col gap-12">
-        <div data-glass-keepout>
-          <SectionHead id="billing-title" kicker={b.kicker} title={b.title} continuation={b.continuation} />
-        </div>
+        <SectionHead id="billing-title" kicker={b.kicker} title={b.title} continuation={b.continuation} />
         <ul className="grid gap-4 md:grid-cols-3 lg:gap-5">
           {b.tiles.map((t, i) => (
             <li
@@ -39,7 +37,7 @@ export function BillingSection({ notes }: { notes: Notes }) {
           ))}
         </ul>
         <div>
-          <TextLink href={b.link.href} arrow data-glass-keepout>
+          <TextLink href={b.link.href} arrow>
             {b.link.label}
           </TextLink>
         </div>

@@ -14,9 +14,7 @@ export function HowSection() {
     <section id="how" aria-labelledby="how-title" className="section-y relative isolate scroll-mt-[var(--header-h)]">
       <SectionLight />
       <div className="container-page flex flex-col gap-12">
-        <div data-glass-keepout>
-          <SectionHead id="how-title" kicker={h.kicker} title={h.title} continuation={h.continuation} />
-        </div>
+        <SectionHead id="how-title" kicker={h.kicker} title={h.title} continuation={h.continuation} />
         <ol className="grid gap-4 md:grid-cols-3 lg:gap-5">
           {h.steps.map((s, i) => (
             <li

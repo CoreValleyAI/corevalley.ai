@@ -22,7 +22,7 @@ export function AssistantSection() {
     <section aria-labelledby="assistant-title" className="section-y relative isolate">
       <SectionLight />
       <div className="pa container-page grid gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center lg:gap-16">
-        <div className="flex flex-col gap-8" data-glass-keepout>
+        <div className="flex flex-col gap-8">
           <SectionHead id="assistant-title" kicker={a.kicker} title={a.title} continuation={a.continuation} lead={a.lead} />
           <div>
             <TextLink href={a.link.href} arrow>
@@ -70,9 +70,7 @@ export function AssistantSection() {
               </fieldset>
             </div>
           </div>
-          <figcaption className="type-caption text-ink-3" data-glass-keepout>
-            {a.caption}
-          </figcaption>
+          <figcaption className="type-caption text-ink-3">{a.caption}</figcaption>
         </figure>
       </div>
     </section>
