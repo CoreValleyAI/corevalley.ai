@@ -9,8 +9,10 @@
  * hero's glass, made of one soft light that follows the pointer.
  *
  * Where it can't or shouldn't run — no WebGL2, a slow device or Save-Data,
- * more contrast, forced colours, reduced transparency, or `?glass=css` —
- * the panes keep their CSS glass over a still, soft light instead.
+ * more contrast, forced colours, or `?glass=css` — the panes keep their CSS
+ * glass over a still, soft light instead. Reduced transparency (often an
+ * OS-wide "transparency effects" switch) is treated as the hero's glass
+ * treats it: the scene's glass already holds text contrast pixel by pixel.
  *
  * `span="scroll"`: inside a horizontal scroller (the carousel), the light
  * spans everything that scrolls, so the panes' glass moves with them on the
@@ -20,7 +22,7 @@ import { useEffect, useRef, useSyncExternalStore } from "react";
 import { GLStage } from "@/components/gl/gl-stage";
 import { cn } from "@/lib/cn";
 
-const QUERIES = ["(prefers-contrast: more)", "(forced-colors: active)", "(prefers-reduced-transparency: reduce)"];
+const QUERIES = ["(prefers-contrast: more)", "(forced-colors: active)"];
 
 function subscribe(cb: () => void) {
   const lists = QUERIES.map((q) => window.matchMedia(q));
