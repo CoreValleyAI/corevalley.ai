@@ -50,7 +50,7 @@ export const NAV = {
       name: g.name,
       line: `${g.title} ${g.continuation}`,
       items: g.items.map((i) => ({
-        href: `/products#${i.id}`,
+        href: `/products/${i.page}`,
         label: i.name,
         glyph: i.glyph,
         description: CATALOG_SHORT[i.id] ?? i.line,
@@ -59,8 +59,8 @@ export const NAV = {
     all: { href: "/products", label: "All products" },
     featured: {
       href: "/hardware",
-      title: "Powered by NVIDIA",
-      body: `H200 NVL · ${v("gpu.memory")} ${v("gpu.memoryType")} on every GPU`,
+      title: "The GPUs we use",
+      body: "NVIDIA H200 NVL",
     },
     footer: [
       { href: "/products#compare", label: "Compare products" },

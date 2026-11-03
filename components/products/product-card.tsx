@@ -7,7 +7,7 @@ import { ViewTransition } from "react";
 import { AppLink } from "@/components/system/app-link";
 import { Arrow } from "@/components/system/button";
 import { DotGlyph } from "@/components/system/dot-glyph";
-import type { Product } from "@/copy/en/products";
+import type { AnyProductSlug, Product } from "@/copy/en/products";
 import { cn } from "@/lib/cn";
 
 export function ProductCard({
@@ -17,7 +17,7 @@ export function ProductCard({
   morph = true,
   className,
 }: {
-  product: Product;
+  product: Product<AnyProductSlug>;
   /** Also show "best for" and the billing line. */
   detail?: boolean;
   highlight?: boolean;

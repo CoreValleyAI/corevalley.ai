@@ -17,7 +17,7 @@ import { SpecList } from "@/components/system/spec-list";
 import { SpecReadout } from "@/components/system/spec-readout";
 import { Status } from "@/components/system/status";
 import { TextLink } from "@/components/system/text-link";
-import { PRODUCTS, productBySlug } from "@/copy/en/products";
+import { ALL_PRODUCTS, MORE_PRODUCTS, PRODUCTS, productBySlug } from "@/copy/en/products";
 import { fact, v } from "@/lib/facts";
 import { pageMetadata } from "@/lib/seo";
 
@@ -36,7 +36,7 @@ const DEMOS: Partial<Record<string, { title: string; continuation: string; demo:
 };
 
 export function generateStaticParams() {
-  return PRODUCTS.map((p) => ({ slug: p.slug }));
+  return ALL_PRODUCTS.map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -55,7 +55,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const product = productBySlug(slug);
   if (!product) notFound();
 
-  const others = PRODUCTS.filter((p) => p.slug !== product.slug);
+  // Siblings first: the core six link to each other, the catalogue pages to theirs.
+  const core = PRODUCTS.some((p) => p.slug === product.slug);
+  const others = (core ? PRODUCTS : MORE_PRODUCTS).filter((p) => p.slug !== product.slug).slice(0, 5);
   const notes = createNotes(product.specs.filter((id) => fact(id).footnote || fact(id).source.url));
   const contact = `/contact?intent=workloads&product=${product.slug}`;
 
@@ -102,6 +104,48 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           </div>
         </div>
       </section>
+
+      {/* Who it's for, and the jobs it does: plain words before the detail. */}
+      {product.audience && (
+        <section aria-labelledby="for-title" className="section-y">
+          <div className="container-page grid gap-12 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-20">
+            <div className="flex flex-col gap-10">
+              <SectionHead
+                id="for-title"
+                kicker="Who it's for"
+                title={product.bestFor + "."}
+                size="title-1"
+              />
+              <ul className="grid gap-x-10 gap-y-8 md:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+                {product.audience.map((a, i) => (
+                  <li
+                    key={a.title}
+                    className="flex flex-col gap-3 border-t border-line pt-6"
+                    data-reveal
+                    style={{ "--i": i } as React.CSSProperties}
+                  >
+                    <h3 className="type-title-3">{a.title}</h3>
+                    <p className="type-body text-ink-2">{a.body}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {product.examples && (
+              <div className="flex flex-col gap-5 self-start rounded-panel border border-line bg-bg-raised p-6 md:p-8">
+                <h3 className="type-kicker text-ink-3">What teams use it for</h3>
+                <ul className="flex flex-col gap-4">
+                  {product.examples.map((e) => (
+                    <li key={e} className="type-body flex items-baseline gap-3 text-ink">
+                      <span aria-hidden="true" className="size-1.5 shrink-0 translate-y-[-0.15rem] rounded-full bg-hydro" />
+                      {e}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* How it works */}
       <section id="how" aria-labelledby="how-title" className="section-y scroll-mt-[var(--header-h)]">

@@ -3,9 +3,7 @@
  * painted on the first frame; everything behind it is an enhancement:
  * the CSS dot-valley first, the WebGL valley when it is ready.
  */
-import { Fragment } from "react";
 import { ButtonLink } from "@/components/system/button";
-import { Decode } from "@/components/motion/decode";
 import { WordRise } from "@/components/motion/word-rise";
 import { HOME } from "@/copy/en/home";
 import { cn } from "@/lib/cn";
@@ -18,20 +16,7 @@ export function Hero() {
       <HeroValley />
 
       <div className="container-page relative flex min-h-[100svh] flex-col items-center justify-center pt-[calc(var(--header-h)+2rem)] pb-[clamp(9rem,22vh,14rem)] text-center">
-        <p className="type-kicker flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-ink-2">
-          {h.kicker.map((k, i) => (
-            <Fragment key={k}>
-              {i > 0 && (
-                <span aria-hidden="true" className="text-ink-4">
-                  ·
-                </span>
-              )}
-              <Decode text={k.toUpperCase()} delay={150 + i * 220} />
-            </Fragment>
-          ))}
-        </p>
-
-        <h1 id="hero-title" className="type-display-1 mt-7 max-w-[13ch] md:mt-9 md:max-w-none">
+        <h1 id="hero-title" className="type-display-1 max-w-[13ch] md:max-w-none">
           <WordRise text={h.title.line1} delay={120} />
           <br className="hidden sm:block" /> <WordRise text={h.title.line2} start={3} delay={120} />{" "}
           <span className="rise__w rise__w--open">

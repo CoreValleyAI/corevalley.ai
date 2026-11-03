@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { PRODUCTS } from "@/copy/en/products";
+import { ALL_PRODUCTS } from "@/copy/en/products";
 import { GENERAL_APPLICATION, openJobs } from "@/lib/content/jobs";
 import { authorsInUse, blogIndex, categoriesInUse, livePosts } from "@/lib/content/posts";
 import { absoluteUrl } from "@/lib/site";
@@ -33,7 +33,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const core = [
     entry("/", 1, "weekly"),
     entry("/products", 0.9),
-    ...PRODUCTS.map((p) => entry(`/products/${p.slug}`, 0.8)),
+    ...ALL_PRODUCTS.map((p) => entry(`/products/${p.slug}`, 0.8)),
     entry("/hardware", 0.8),
     entry("/infrastructure", 0.8),
     entry("/platform", 0.8),

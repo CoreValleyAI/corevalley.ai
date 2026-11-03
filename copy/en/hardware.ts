@@ -38,7 +38,7 @@ export const HARDWARE = {
     title: "Starting with H200.",
     continuation: "Built for what follows.",
     now: { label: "Now", title: "NVIDIA H200 NVL", body: "Coming soon · enterprise early access" },
-    next: { label: "Next", title: "Sixteen GPUs", body: "More H200 NVL as early-access customers come on board." },
+    next: { label: "Next", title: "More H200 NVL", body: "Capacity grows as early-access customers come on board." },
     later: {
       label: "Later",
       title: "More GPUs",

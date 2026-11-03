@@ -29,11 +29,11 @@ export const INFRASTRUCTURE = {
     kicker: "Capacity",
     title: "Starting with H200 NVL.",
     continuation: "Growing from there.",
-    lead: "Our first NVIDIA H200 NVL GPUs are being commissioned now. We'll scale to sixteen GPUs, then add other NVIDIA GPUs as demand grows.",
+    lead: "Our NVIDIA H200 NVL GPUs are being commissioned now. We will add more of them, then other NVIDIA GPUs, as demand grows.",
     link: { href: "/hardware", label: "The GPU" },
     steps: [
       { label: "Now", title: "NVIDIA H200 NVL", body: "Being commissioned; enterprise early access is open." },
-      { label: "Next", title: "Sixteen GPUs", body: "More H200 NVL as early-access customers come on board." },
+      { label: "Next", title: "More H200 NVL", body: "Capacity grows as early-access customers come on board." },
       { label: "Later", title: "More GPUs", body: "Other NVIDIA GPUs and new generations, as demand grows." },
     ],
   },

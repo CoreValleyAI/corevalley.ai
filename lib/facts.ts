@@ -201,7 +201,7 @@ const FACTS = {
     owner: "pricing",
   },
   "billing.rails": {
-    value: "eSewa, Khalti, bank transfer or invoice",
+    value: "Digital payment, bank transfer or invoice",
     label: "Ways to pay",
     status: "confirmed",
     source: PUBLISHED,

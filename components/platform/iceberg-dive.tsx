@@ -14,7 +14,6 @@
 
 import * as React from "react";
 import { ButtonLink } from "@/components/system/button";
-import { Status } from "@/components/system/status";
 import { DIVE_STEPS, PLATFORM } from "@/copy/en/platform";
 import { cn } from "@/lib/cn";
 
@@ -118,8 +117,6 @@ export function IcebergDive() {
 
         <div className="ib-caps">
           <section className="ib-cap ib-cap--intro is-live" style={{ opacity: 1 }}>
-            <Status className="ib-status" />
-            <p className="ib-cap__eyebrow">{D.intro.kicker}</p>
             <h1 className="ib-cap__title">
               {D.intro.title} <em>{D.intro.lit}</em>
             </h1>

@@ -21,7 +21,6 @@ import { AppLink } from "@/components/system/app-link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
 import { Brandmark, Wordmark } from "@/components/brand/logo";
-import { NvidiaLogo } from "@/components/brand/partner-logos";
 import { GpuArt } from "@/components/hardware/visuals";
 import { Arrow, ButtonLink } from "@/components/system/button";
 import { IndustryGlyph } from "@/components/solutions/industry-glyph";
@@ -412,7 +411,6 @@ function ProductsPanel({ pathname }: { pathname: string }) {
                   <GpuArt className="w-[7.5rem]" />
                 </span>
                 <span className="flex min-w-0 flex-col gap-1">
-                  <NvidiaLogo className="h-3.5 self-start text-ink" />
                   <span className="type-small font-medium text-ink">{p.featured.title}</span>
                   <span className="type-caption text-ink-3">{p.featured.body}</span>
                 </span>

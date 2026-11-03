@@ -9,7 +9,7 @@ How CoreValley meters usage, produces invoices and accepts payment — in Nepali
 
 - **Currency** — everything is quoted and invoiced in Nepali rupees. No USD invoices, no exchange-rate spread.
 - **Metering** — GPU time is metered per second, with a 60-second minimum per pod. Nothing is charged while a pod waits in the queue, and the meter stops when you stop the pod.
-- **Payment methods** — eSewa, Khalti, bank transfer, and corporate invoices on net terms.
+- **Payment methods** — digital payment, bank transfer, and corporate invoices on net terms.
 
 ## What this page will cover
 

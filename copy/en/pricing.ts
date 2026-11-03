@@ -9,7 +9,7 @@ export const PRICING = {
   meta: {
     title: "Pricing — billed by the second, in Nepalese rupees",
     description:
-      "How CoreValley billing works: GPU time per second with a 60-second minimum, reserved terms at a fixed rate, storage by capacity — all in NPR, paid by eSewa, Khalti, bank transfer or invoice.",
+      "How CoreValley billing works: GPU time per second with a 60-second minimum, reserved terms at a fixed rate, storage by capacity — all in NPR, paid digitally, by bank transfer or by invoice.",
   },
   hero: {
     kicker: "Pricing",
@@ -47,7 +47,7 @@ export const PRICING = {
   pay: {
     kicker: "How you pay",
     title: "In rupees, the way you already pay.",
-    methods: ["eSewa", "Khalti", "Bank transfer", "Invoice"],
+    methods: ["Digital payment", "Bank transfer", "Invoice"],
     note: "Metered usage is invoiced monthly in Nepalese rupees. VAT is applied at the statutory rate.",
   },
   quote: {
@@ -67,7 +67,7 @@ export const PRICING = {
     },
     {
       q: "Which currency, and how do we pay?",
-      a: "Nepalese rupees. Pay by eSewa, Khalti, bank transfer or invoice.",
+      a: "Nepalese rupees. Pay digitally, by bank transfer or by invoice.",
     },
     {
       q: "Is there a minimum commitment?",

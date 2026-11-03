@@ -151,7 +151,7 @@ export const LEGAL: Record<"privacy" | "terms" | "data-residency", LegalPage> = 
         heading: "Billing",
         paragraphs: [
           "On-demand GPUs and MIG slices are billed per second of running time, with a 60-second minimum per run. Reserved capacity is held for you at a fixed rate for the term you choose. Storage is billed by the capacity you keep, and engineering services are quoted before the work starts.",
-          "Prices are in Nepalese rupees. Metered usage is invoiced monthly, and VAT is applied at the statutory rate. You can pay by eSewa, Khalti, bank transfer or invoice. Payment terms are set out in your order form.",
+          "Prices are in Nepalese rupees. Metered usage is invoiced monthly, and VAT is applied at the statutory rate. You can pay digitally, by bank transfer or by invoice. Payment terms are set out in your order form.",
         ],
       },
       {

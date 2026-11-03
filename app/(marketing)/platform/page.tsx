@@ -21,6 +21,33 @@ export default function PlatformPage() {
       {/* The Iceberg: the GPU above the waterline, the layers we run below. */}
       <IcebergDive />
 
+      {/* The allegory, in plain words. */}
+      <section aria-labelledby="allegory-title" className="section-y">
+        <div className="container-page">
+          <SectionHead
+            id="allegory-title"
+            kicker={p.allegory.kicker}
+            title={p.allegory.title}
+            continuation={p.allegory.continuation}
+            lead={p.allegory.lead}
+          />
+          <ol className="mt-12 grid gap-4 md:grid-cols-3 md:gap-5">
+            {p.allegory.parts.map((part, i) => (
+              <li
+                key={part.title}
+                className="flex flex-col gap-3 rounded-panel border border-line bg-bg-raised p-6 md:p-8"
+                data-reveal
+                style={{ "--i": i } as React.CSSProperties}
+              >
+                <span className="type-kicker text-hydro-ink light:text-hydro">{part.label}</span>
+                <h3 className="type-title-3">{part.title}</h3>
+                <p className="type-body text-ink-2">{part.body}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
       {/* The tools */}
       <section aria-labelledby="tools-title" className="section-y">
         <div className="container-page">

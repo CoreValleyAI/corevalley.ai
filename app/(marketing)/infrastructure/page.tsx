@@ -1,5 +1,4 @@
 import { ValleyPortrait } from "@/components/art/valley-portrait";
-import { NvidiaLogo } from "@/components/brand/partner-logos";
 import { LayerStack } from "@/components/infrastructure/layer-stack";
 import { DataPath } from "@/components/infrastructure/data-path";
 import { Page } from "@/components/motion/page";
@@ -36,9 +35,6 @@ export default function InfrastructurePage() {
             <h1 className="type-display-1">{p.hero.title}</h1>
             <p className="type-lead measure text-ink-2">{p.hero.lead}</p>
             <Status id="region" />
-            <div className="mt-4 flex items-center gap-6 text-ink-2">
-              <NvidiaLogo className="h-6" />
-            </div>
           </div>
           <figure className="flex flex-col gap-3" data-parallax="0.05">
             <ValleyPortrait className="aspect-[640/545] w-full rounded-panel border border-line" />
