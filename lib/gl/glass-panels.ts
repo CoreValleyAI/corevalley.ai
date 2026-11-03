@@ -37,6 +37,11 @@ export interface PanelsOptions {
 
 const TRACK_CAP = 2000; // ms: no transition is followed longer than this
 const TRACK_TAIL = 60; // ms after one ends
+/** Under the hand, or holding keyboard focus (a card's stretched link). */
+const LIFTED =
+  typeof CSS !== "undefined" && CSS.supports?.("selector(:has(*))")
+    ? ":hover, :focus-visible, :has(:focus-visible)"
+    : ":hover, :focus-visible";
 
 export function createPanels(o: PanelsOptions) {
   const { canvas, host, invalidate } = o;
@@ -196,7 +201,7 @@ export function createPanels(o: PanelsOptions) {
         if (!r) continue;
         if (canLift[i]) {
           const el = els[i]!;
-          const want = el.matches(":active") ? 1 : el.matches(":hover, :focus-visible") ? 0.6 : 0;
+          const want = el.matches(":active") ? 1 : el.matches(LIFTED) ? 0.6 : 0;
           lifts[i] = lifts[i]! + (want - lifts[i]!) * (1 - Math.exp(-dt * 14));
           if (Math.abs(want - lifts[i]!) > 0.002) lifting = true;
           else lifts[i] = want;

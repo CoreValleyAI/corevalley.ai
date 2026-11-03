@@ -124,6 +124,9 @@ export function GLStage({
     let far = false;
     let entry: PoolEntry | null = null;
     let cancelIdle: (() => void) | null = null;
+    // This stage's turn in the mount queue: always ended, even by an unmount
+    // mid-wait, or every pooled stage after it would wait for ever.
+    let endTurn: (() => void) | null = null;
 
     const doRelease = () => {
       if (released || cancelled) return;
@@ -178,6 +181,7 @@ export function GLStage({
       mountQueue = mountQueue.then(
         () =>
           new Promise<void>((done) => {
+            endTurn = done;
             const attempt = () => {
               if (cancelled || far) return done();
               if (busy()) {
@@ -225,6 +229,7 @@ export function GLStage({
       near.disconnect();
       away?.disconnect();
       cancelIdle?.();
+      endTurn?.();
       offProgress?.();
       stage?.dispose();
       delete canvas.dataset.live;

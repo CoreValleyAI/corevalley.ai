@@ -145,6 +145,7 @@ uniform float u_dither;       // dither amplitude, in 8-bit steps; 0 = none
 out vec4 o;
 
 const vec3 LUMA = vec3(0.2126, 0.7152, 0.0722);
+float srgbEncode(float x) { return x <= 0.0031308 ? 12.92 * x : 1.055 * pow(x, 1.0 / 2.4) - 0.055; }
 
 float sdPanel(vec2 p, vec2 b, float r, out vec2 nrm) {
   vec2 s = vec2(p.x < 0.0 ? -1.0 : 1.0, p.y < 0.0 ? -1.0 : 1.0);
@@ -216,6 +217,9 @@ void main() {
   float Lb = dot(lin, LUMA), Lk = dot(tint, LUMA);
   bool lightText = u_textLum > Lk;
   float target = lightText ? (u_textLum + 0.05) / u_minContrast - 0.05 : u_minContrast * (u_textLum + 0.05) - 0.05;
+  // That target is true (sRGB) luminance; carry it into the 2.2 space the
+  // glass is mixed in, which reads the darks low (4.26:1 where 4.5 was meant).
+  target = pow(srgbEncode(clamp(target, 0.0, 1.0)), 2.2);
   bool fails = lightText ? (Lb > target) : (Lb < target);
   float den = Lb - Lk;
   // The text sits inside the flat top, never on the bezel: the rim keeps
