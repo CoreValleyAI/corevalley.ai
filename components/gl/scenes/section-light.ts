@@ -200,6 +200,8 @@ export const createSectionLightScene: SceneFactory = async (ctx) => {
           dither: true,
           // A pane's text can sit 16 px from its rim (a window's title bar).
           scrimEdge: 0.7,
+          // Dithered glass: aimed past 4.5 so no single pixel rounds under it.
+          minContrast: 4.6,
         });
         if (!shown) {
           shown = true;

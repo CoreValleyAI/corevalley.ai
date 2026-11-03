@@ -67,6 +67,10 @@ export interface GlassLook {
   /** How far into the bezel (0–1 of it) the scrim reaches full strength;
       default 1. Lower it where text sits close to the rim. */
   scrimEdge?: number;
+  /** The contrast the scrim holds for the pane's text; default 4.5. Aim a
+      little higher where the dither and eight-bit rounding must not tip a
+      pixel under 4.5. */
+  minContrast?: number;
 }
 
 export const FULLSCREEN_VS = /* glsl */ `#version 300 es
@@ -388,7 +392,7 @@ function buildGlassPass(gl: WebGL2RenderingContext, down: WebGLProgram, up: WebG
       // contrast pixel by pixel, so the valley can show through.
       const clear = look.dark ? [15 / 255, 19 / 255, 25 / 255, 0.38] : [1, 1, 1, 0.44];
       const clearText = look.dark ? 0.9 : 0.012;
-      gl.uniform1f(up_("u_minContrast"), 4.5);
+      gl.uniform1f(up_("u_minContrast"), look.minContrast ?? 4.5);
       gl.uniform2f(up_("u_light"), -0.6, -0.8);
       const L = look.light;
       gl.uniform4f(up_("u_lightPos"), L?.x ?? 0, L?.y ?? 0, L ? L.weight : 0, L?.reach ?? 0);
