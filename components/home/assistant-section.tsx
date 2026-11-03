@@ -31,7 +31,7 @@ export function AssistantSection() {
           </div>
         </div>
 
-        <figure className="flex flex-col gap-4">
+        <figure className="flex flex-col gap-3">
           <div data-refract data-refract-bezel="24" data-glass-panel="" className="lg pa-window rounded-panel">
             <div className="pa-bar">
               <span className="type-body font-semibold text-ink">{a.window}</span>
@@ -70,7 +70,8 @@ export function AssistantSection() {
               </fieldset>
             </div>
           </div>
-          <figcaption className="type-caption text-ink-3">{a.caption}</figcaption>
+          {/* ink-2: it sits in the light under the pane (and its shadow). */}
+          <figcaption className="type-caption text-ink-2">{a.caption}</figcaption>
         </figure>
       </div>
     </section>

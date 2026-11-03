@@ -197,6 +197,7 @@ export const createSectionLightScene: SceneFactory = async (ctx) => {
           // On daylight, a lighter lift than the valley's buttons: these
           // panes are large, and a caption may sit just below one.
           shadow: dark ? 0.32 : 0.08,
+          dither: true,
         });
         if (!shown) {
           shown = true;

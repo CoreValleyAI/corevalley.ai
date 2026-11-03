@@ -61,6 +61,9 @@ export interface GlassLook {
   /** The drop shadow's strength (0–1); default by theme. Given, it is drawn
       out to where it ends instead of stopping at the pane's quad. */
   shadow?: number;
+  /** Dither the glass: over a smooth scene (one soft light) its eight-bit
+      blur would band. */
+  dither?: boolean;
 }
 
 export const FULLSCREEN_VS = /* glsl */ `#version 300 es
@@ -138,6 +141,7 @@ uniform vec3 u_skyA;          // the sky at its centre
 uniform vec3 u_skyB;          // the background
 uniform vec4 u_sky;           // cx, cy, rx, ry (0-1 of the canvas)
 uniform float u_skyStop;
+uniform float u_dither;       // dither amplitude, in 8-bit steps; 0 = none
 out vec4 o;
 
 const vec3 LUMA = vec3(0.2126, 0.7152, 0.0722);
@@ -201,6 +205,8 @@ void main() {
   } else {
     col = backdrop(px);
   }
+  // Before the scrim, so the contrast it holds includes the dither.
+  if (u_dither > 0.0) col = max(col + (fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715)))) - 0.5) * (u_dither / 255.0), 0.0);
 
   // Tint, then a scrim that guarantees the text's contrast (in linear light).
   // A coloured pane is mixed as displayed (mixing a dark green with white
@@ -385,6 +391,8 @@ function buildGlassPass(gl: WebGL2RenderingContext, down: WebGLProgram, up: WebG
       gl.uniform3fv(up_("u_skyB"), look.bg);
       gl.uniform4f(up_("u_sky"), look.sky.cx, look.sky.cy, look.sky.rx, look.sky.ry);
       gl.uniform1f(up_("u_skyStop"), look.sky.stop);
+      // Through the tint, 1.5 steps here come out at about half a step.
+      gl.uniform1f(up_("u_dither"), look.dither ? 1.5 : 0);
       // Device pixels per CSS pixel: the bezel and padding are set in CSS px.
       const k = width / Math.max(1, (gl.canvas as HTMLCanvasElement).clientWidth || width);
       for (const r of panels) {
