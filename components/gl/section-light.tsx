@@ -33,11 +33,13 @@ function subscribe(cb: () => void) {
   };
 }
 
-/** The same first guess at quality as lib/gl/stage.ts (Tier 1 keeps CSS). */
+/** Enough device for the scene: no Save-Data, more than 3 GB, 4 or more
+    cores. iOS reports 4 cores on every iPhone and no memory at all, so
+    iPhones pass; phones with little memory keep CSS. */
 function capable() {
   const nav = navigator as Navigator & { deviceMemory?: number; connection?: { saveData?: boolean } };
   if (nav.connection?.saveData) return false;
-  return (nav.deviceMemory ?? 8) > 3 && (nav.hardwareConcurrency ?? 8) > 4;
+  return (nav.deviceMemory ?? 8) > 3 && (nav.hardwareConcurrency ?? 8) >= 4;
 }
 
 function allowed() {
@@ -92,6 +94,7 @@ export function SectionLight({ className, span }: { className?: string; span?: "
           pool="glass"
           release="200% 0px"
           maxPixels={2_500_000}
+          maxDpr={2}
           followScroll
           pointerTarget={(canvas) => canvas.closest("section")}
           onShown={(shown) => {

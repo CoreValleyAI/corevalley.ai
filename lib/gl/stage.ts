@@ -87,6 +87,10 @@ export interface StageOptions {
   /** Cap on drawing-buffer pixels: tall or wide canvases lower their pixel
       ratio rather than their size. */
   maxPixels?: number;
+  /** This scene's own pixel-ratio cap, in place of its tier's: a scene that
+      sleeps when idle can afford the screen's sharpness (phones report too
+      few cores for their tier to be a fair guess: iOS always says 4). */
+  maxDpr?: number;
   /** Keep the light under a still mouse while the page scrolls beneath it
       (the pointer is re-derived from its last position on every scroll). */
   followScroll?: boolean;
@@ -339,7 +343,7 @@ export class Stage {
 
   private measure(force: boolean) {
     const r = this.canvas.getBoundingClientRect();
-    let dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR[this.tier]);
+    let dpr = Math.min(window.devicePixelRatio || 1, this.opts.maxDpr ?? MAX_DPR[this.tier]);
     const cap = this.opts.maxPixels;
     if (cap && r.width * r.height * dpr * dpr > cap) dpr = Math.max(0.5, Math.sqrt(cap / Math.max(1, r.width * r.height)));
     const w = Math.max(1, Math.round(r.width * dpr));

@@ -87,6 +87,7 @@ export function GLStage({
   pool,
   release,
   maxPixels,
+  maxDpr,
   followScroll,
 }: {
   /** Dynamic import of the scene, so its code loads only when needed. */
@@ -106,6 +107,7 @@ export function GLStage({
   /** Release the context beyond this distance (an IntersectionObserver rootMargin). */
   release?: string;
   maxPixels?: number;
+  maxDpr?: number;
   followScroll?: boolean;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -156,6 +158,7 @@ export function GLStage({
       stage = new Stage(canvas, factory, {
         pointerTarget: target,
         maxPixels,
+        maxDpr,
         followScroll,
         onReady: () => {
           canvas.dataset.live = "";
