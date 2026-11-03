@@ -7,7 +7,6 @@ import { createNotes, NoteList, NoteRef } from "@/components/system/fact";
 import { GlassLight } from "@/components/system/glass-light";
 import { Kicker } from "@/components/system/kicker";
 import { SectionHead } from "@/components/system/section";
-import { Status } from "@/components/system/status";
 import { TextLink } from "@/components/system/text-link";
 import { productBySlug } from "@/copy/en/products";
 import { SOLUTIONS } from "@/copy/en/solutions";
@@ -38,7 +37,6 @@ export default function SolutionsPage() {
               {s.hero.title} <span className="text-ink-3">{s.hero.continuation}</span>
             </h1>
             <p className="type-lead measure text-ink-2">{s.hero.lead}</p>
-            <Status />
           </div>
           <nav aria-label="Industries">
             <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">

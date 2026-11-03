@@ -152,7 +152,7 @@ export const FOOTER = {
     { href: "/legal/data-residency", label: "Data residency" },
   ],
   copyright: `© ${new Date().getFullYear()} ${ORG.legalName}, Kathmandu`,
-  credits: "Partners are named for identification; NVIDIA marks belong to their owner.",
+  credits: "NVIDIA and the NVIDIA logo are trademarks of NVIDIA Corporation. Partners are named for identification only.",
 } as const;
 
 export const UI = {

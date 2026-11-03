@@ -129,7 +129,8 @@ function makePalette(): Palette {
   if (p.theme === "dark") {
     return {
       add: true,
-      bgTop: [20, 22, 26],
+      // OLED black: the dive sits on true #000, like the page around it.
+      bgTop: [0, 0, 0],
       bgBot: [0, 0, 0],
       iceTop: [0.9, 0.9, 0.92],
       iceSub: hydro,

@@ -194,7 +194,7 @@ export const PRODUCTS: Product[] = [
     meta: {
       title: "On-demand GPUs — NVIDIA H200 NVL by the second",
       description:
-        "NVIDIA H200 NVL GPUs in the Kathmandu Valley when you need them, billed per second in NPR with a 60-second minimum. Coming soon; early access open.",
+        "NVIDIA H200 NVL GPUs in the Kathmandu Valley when you need them, billed per second in NPR with a 60-second minimum.",
     },
   },
   {

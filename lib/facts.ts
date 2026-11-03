@@ -156,6 +156,16 @@ const FACTS = {
     footnote:
       "99.99 % is our datacentre facility's availability commitment (power, cooling and building infrastructure). Service-level terms for CoreValley services are set out in your agreement.",
   },
+  "place.uptimeMinutes": {
+    value: "≈ 53 minutes",
+    label: "Most downtime a year the 99.99 % commitment allows",
+    status: "confirmed",
+    source: { name: "Calculated from the 99.99 % facility commitment" },
+    asOf: D,
+    owner: "infrastructure",
+    footnote:
+      "A 365-day year has 525,600 minutes, and 0.01 % of them is 52.56. The commitment covers our datacentre facility (power, cooling and building infrastructure); service-level terms for CoreValley services are set out in your agreement.",
+  },
   "place.latency": {
     value: "< 5 ms",
     label: "Round trip inside the Kathmandu Valley",

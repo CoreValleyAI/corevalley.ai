@@ -1,15 +1,23 @@
+import { AssistantSection } from "@/components/home/assistant-section";
 import { BuiltOn } from "@/components/home/built-on";
+import { GrowSection } from "@/components/home/grow-section";
 import { Hero } from "@/components/home/hero";
+import { HowSection } from "@/components/home/how-section";
 import { ProtectionMap } from "@/components/home/protection-map";
-import { Climb, HowSection, ProductsSection, WhatSection, WhySection } from "@/components/home/sections";
+import { ReceiptSection } from "@/components/home/receipt-section";
+import { Climb } from "@/components/home/sections";
+import { UptimeSection } from "@/components/home/uptime-section";
+import { WhatSection } from "@/components/home/what-section";
+import { WordsSection } from "@/components/home/words-section";
 import { Page } from "@/components/motion/page";
-import { BillingBox } from "@/components/pricing/billing-box";
+import { createNotes, NoteList } from "@/components/system/fact";
 import { GlassLight } from "@/components/system/glass-light";
 import { SectionHead } from "@/components/system/section";
 import { TextLink } from "@/components/system/text-link";
 import { UseCaseCarousel } from "@/components/use-cases/carousel";
 import { HOME } from "@/copy/en/home";
 import { findUseCase, HOME_STORIES } from "@/copy/en/use-cases";
+import { fact, v } from "@/lib/facts";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
@@ -21,17 +29,47 @@ export const metadata = pageMetadata({
 
 export default function HomePage() {
   const stories = HOME_STORIES.map((slug) => findUseCase(slug)!);
+  const billing = fact("billing.unit");
+  const notes = createNotes([
+    "place.uptime",
+    {
+      key: "receipt",
+      text: `Sample jobs and times, for illustration. "By the hour" rounds each run up to the next full hour; per-second billing has a minimum of ${v("billing.minimum")} per run. Rates are being finalised; every request gets a firm quote in rupees.`,
+      source: billing.source,
+      asOf: billing.asOf,
+    },
+    "place.uptimeMinutes",
+  ]);
 
   return (
     <Page>
       <Hero />
       <BuiltOn />
 
-      {/* What we do, in plain words. */}
-      <WhatSection />
+      {/* What running AI takes, and what we run for you. */}
+      <WhatSection notes={notes} />
 
-      {/* How it works: three steps, no jargon. */}
-      <HowSection />
+      {/* Training, fine-tuning, inference, in plain words. */}
+      <WordsSection />
+
+      {/* A private assistant answering from your own documents. */}
+      <AssistantSection />
+
+      {/* Your data is safe with us: the protections, drawn and listed. */}
+      <section aria-labelledby="rim-title" className="section-y relative isolate">
+        <GlassLight variant="b" quiet />
+        <div className="container-page">
+          <ProtectionMap items={HOME.rim.items} link={HOME.rim.link}>
+            <SectionHead
+              id="rim-title"
+              kicker={HOME.rim.kicker}
+              title={HOME.rim.title}
+              continuation={HOME.rim.continuation}
+              lead={HOME.rim.lead}
+            />
+          </ProtectionMap>
+        </div>
+      </section>
 
       {/* Use cases, in the owner's order. */}
       <section aria-labelledby="cases-title" className="section-y relative isolate overflow-x-clip">
@@ -51,40 +89,20 @@ export default function HomePage() {
         <UseCaseCarousel cases={stories} label="Use cases" />
       </section>
 
-      {/* Your data is safe with us: the protections, drawn and listed. */}
-      <section aria-labelledby="rim-title" className="section-y">
-        <div className="container-page">
-          <ProtectionMap items={HOME.rim.items} link={HOME.rim.link}>
-            <SectionHead
-              id="rim-title"
-              kicker={HOME.rim.kicker}
-              title={HOME.rim.title}
-              continuation={HOME.rim.continuation}
-              lead={HOME.rim.lead}
-            />
-          </ProtectionMap>
-        </div>
-      </section>
+      {/* Billing, as the receipt a job produces. */}
+      <ReceiptSection notes={notes} />
 
-      {/* Why local: regulation, speed, power. */}
-      <WhySection />
+      {/* The facility's uptime commitment, as time. */}
+      <UptimeSection notes={notes} />
 
-      {/* Billing at a glance. */}
-      <section aria-labelledby="billing-title" className="section-y relative isolate">
-        <GlassLight variant="b" />
-        <div className="container-page flex flex-col gap-12">
-          <SectionHead
-            id="billing-title"
-            kicker={HOME.billing.kicker}
-            title={HOME.billing.title}
-            continuation={HOME.billing.continuation}
-          />
-          <BillingBox more />
-        </div>
-      </section>
+      {/* From a first test to production, on the same account. */}
+      <GrowSection />
 
-      <ProductsSection />
+      {/* From a brief to a running job. */}
+      <HowSection />
+
       <Climb />
+      <NoteList notes={notes} />
     </Page>
   );
 }

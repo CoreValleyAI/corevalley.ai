@@ -15,7 +15,6 @@ import { Kicker } from "@/components/system/kicker";
 import { SectionHead } from "@/components/system/section";
 import { SpecList } from "@/components/system/spec-list";
 import { SpecReadout } from "@/components/system/spec-readout";
-import { Status } from "@/components/system/status";
 import { TextLink } from "@/components/system/text-link";
 import { ALL_PRODUCTS, MORE_PRODUCTS, PRODUCTS, productBySlug } from "@/copy/en/products";
 import { fact, v } from "@/lib/facts";
@@ -85,7 +84,6 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <Kicker>{product.name}</Kicker>
             <h1 className="type-display-2 max-w-[14ch]">{product.tagline}</h1>
             <p className="type-lead measure text-ink-2">{product.summary}</p>
-            <Status />
             <div className="mt-2 flex flex-wrap gap-3">
               <ButtonLink href={contact} size="lg" magnetic>
                 Request access

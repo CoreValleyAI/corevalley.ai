@@ -9,7 +9,6 @@ import { GlassLight } from "@/components/system/glass-light";
 import { KeyFacts } from "@/components/system/key-facts";
 import { Kicker } from "@/components/system/kicker";
 import { SectionHead } from "@/components/system/section";
-import { Status } from "@/components/system/status";
 import { PRODUCT_CATALOG, PRODUCTS, SERVICE_TAGS } from "@/copy/en/products";
 import { v } from "@/lib/facts";
 import { pageMetadata } from "@/lib/seo";
@@ -39,7 +38,6 @@ export default function ProductsPage() {
               From an API call to a whole GPU: serverless and managed inference, a managed AI platform, and GPUs,
               networking and storage as services — all on NVIDIA H200 NVL, all billed in rupees.
             </p>
-            <Status />
           </div>
           <nav
             aria-label="Service models"

@@ -313,6 +313,13 @@
 :root[data-motion="reduce"] .glass-light__orb {
   animation: none;
 }
+/* Quiet: behind detailed drawings, two fainter fields and no third. */
+.glass-light.is-quiet {
+  opacity: 0.55;
+}
+.glass-light.is-quiet .glass-light__orb--3 {
+  display: none;
+}
 
 /* ── The navigation bar: a floating pill of liquid glass ─────────────────── */
 .lg-nav {

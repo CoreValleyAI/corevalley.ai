@@ -12,43 +12,11 @@
  *                  classes and per-dot variables here are what the CSS
  *                  (app/styles/motion.css, .gpu-*) works from.
  */
+import { Callout } from "@/components/system/drawing";
 import { cn } from "@/lib/cn";
 
 /** Gold of the edge fingers. */
 const GOLD = "#c8a24e";
-
-/** A labelled leader: from a point on the drawing to its label. */
-function Callout({
-  x1,
-  y1,
-  x2,
-  y2,
-  label,
-  anchor = "middle",
-}: {
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
-  label: string;
-  anchor?: "start" | "middle" | "end";
-}) {
-  const up = y2 < y1;
-  return (
-    <g>
-      <polyline points={`${x1},${y1} ${x2},${y2}`} className="stroke-ink-4" strokeWidth="0.7" fill="none" />
-      <circle cx={x1} cy={y1} r="1.5" className="fill-ink-3" />
-      <text
-        x={x2}
-        y={up ? y2 - 5 : y2 + 10}
-        textAnchor={anchor}
-        className="fill-ink-3 font-mono text-[8.5px] tracking-[0.14em] uppercase"
-      >
-        {label}
-      </text>
-    </g>
-  );
-}
 
 export function GpuArt({ className }: { className?: string }) {
   // The die's floor plan: two rows of four processing clusters around the

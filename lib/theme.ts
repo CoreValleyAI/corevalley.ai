@@ -29,7 +29,7 @@ export const STORAGE = {
 /** The browser chrome colour per theme: --bg of each palette. */
 export const THEME_COLOR: Record<Theme, string> = {
   light: "#F8FAFD",
-  dark: "#0A0F14",
+  dark: "#000000",
 };
 
 /* Dependency-free ES5, wrapped in try/catch because storage throws in some

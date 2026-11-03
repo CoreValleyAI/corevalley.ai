@@ -69,7 +69,22 @@ export function createNotes(entries: (FactId | NoteEntry)[]): Notes {
   };
 }
 
-export function NoteRef({ notes, id, className }: { notes: Notes; id: string; className?: string }) {
+/**
+ * The superscript marker. The first marker for a note is the one the note
+ * links back to; pass `anchor={false}` on any later marker for the same
+ * note, so the page never carries two elements with the same id.
+ */
+export function NoteRef({
+  notes,
+  id,
+  className,
+  anchor = true,
+}: {
+  notes: Notes;
+  id: string;
+  className?: string;
+  anchor?: boolean;
+}) {
   const n = notes.n(id);
   return (
     <sup
@@ -80,7 +95,7 @@ export function NoteRef({ notes, id, className }: { notes: Notes; id: string; cl
     >
       <a
         href={`#note-${n}`}
-        id={`ref-${n}`}
+        id={anchor ? `ref-${n}` : undefined}
         aria-label={`Note ${n}`}
         className="rounded-[2px] px-0.5 text-ink-3 transition-colors duration-[var(--dur-short)] hover:text-hydro-ink"
       >

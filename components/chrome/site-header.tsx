@@ -25,7 +25,6 @@ import { GpuArt } from "@/components/hardware/visuals";
 import { Arrow, ButtonLink } from "@/components/system/button";
 import { IndustryGlyph } from "@/components/solutions/industry-glyph";
 import { DotGlyph } from "@/components/system/dot-glyph";
-import { Status } from "@/components/system/status";
 import { NAV, UI, type NavLink } from "@/copy/en/site";
 import { cn } from "@/lib/cn";
 import { ThemeToggle } from "./theme-toggle";
@@ -440,7 +439,6 @@ function ProductsPanel({ pathname }: { pathname: string }) {
             </AppLink>
           ))}
         </div>
-        <Status />
       </div>
     </div>
   );

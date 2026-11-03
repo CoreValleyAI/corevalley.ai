@@ -80,8 +80,8 @@ export const PLATFORM = {
     gpu: {
       kicker: "What you see",
       title: "The GPU.",
-      body: "An NVIDIA H200 NVL with 141 GB of memory, coming soon and billed by the second in rupees. It's the part everyone compares, and the smallest part of the job.",
-      tags: "nvidia h200 nvl · 141 gb hbm3e · coming soon",
+      body: "An NVIDIA H200 NVL with 141 GB of memory, billed by the second in rupees. It's the part everyone compares, and the smallest part of the job.",
+      tags: "nvidia h200 nvl · 141 gb hbm3e",
     },
     waterline: {
       kicker: "Below the waterline",
@@ -94,7 +94,7 @@ export const PLATFORM = {
       kicker: "The whole iceberg",
       title: "All of it,",
       lit: "run for you.",
-      body: "We start with NVIDIA H200 NVL and will scale out, adding more GPUs and new generations as demand grows. Enterprise early access is open.",
+      body: "We start with NVIDIA H200 NVL and will scale out, adding more GPUs and new generations as demand grows.",
       primary: { href: "/contact?intent=workloads", label: "Request access" },
       secondary: { href: "/pricing", label: "How billing works" },
     },
