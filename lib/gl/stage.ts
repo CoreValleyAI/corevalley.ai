@@ -84,7 +84,22 @@ export interface StageOptions {
   onFail?: (reason: string) => void;
   /** Element whose pointer events light the scene (defaults to the canvas). */
   pointerTarget?: HTMLElement;
+  /** Cap on drawing-buffer pixels: tall or wide canvases lower their pixel
+      ratio rather than their size. */
+  maxPixels?: number;
+  /** Keep the light under a still mouse while the page scrolls beneath it
+      (the pointer is re-derived from its last position on every scroll). */
+  followScroll?: boolean;
 }
+
+/** For screenshots and visual diffs: `?gltime=8` freezes scene time at 8 s
+    and keeps the quality tier fixed, so two builds draw the same frame. */
+const FROZEN = (() => {
+  if (typeof location === "undefined") return null;
+  const t = new URLSearchParams(location.search).get("gltime");
+  const n = t === null ? NaN : Number(t);
+  return Number.isFinite(n) ? n : null;
+})();
 
 /** A first guess at quality from what the browser will tell us. Runtime
     frame timing corrects it either way. */
@@ -224,10 +239,17 @@ export class Stage {
     const target = this.opts.pointerTarget ?? this.canvas;
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
     this.fine = fine;
-    const setFrom = (e: PointerEvent) => {
+    let lastX = 0;
+    let lastY = 0;
+    const setAt = (clientX: number, clientY: number) => {
       const r = this.canvas.getBoundingClientRect();
-      this.pointerTarget.x = ((e.clientX - r.left) / r.width) * 2 - 1;
-      this.pointerTarget.y = -(((e.clientY - r.top) / r.height) * 2 - 1);
+      this.pointerTarget.x = ((clientX - r.left) / r.width) * 2 - 1;
+      this.pointerTarget.y = -(((clientY - r.top) / r.height) * 2 - 1);
+    };
+    const setFrom = (e: PointerEvent) => {
+      lastX = e.clientX;
+      lastY = e.clientY;
+      setAt(lastX, lastY);
     };
     const onMove = (e: PointerEvent) => {
       // Touch and pen are followed through the finger poll in tick().
@@ -271,6 +293,18 @@ export class Stage {
     });
     this.touchTarget = target;
 
+    // A still mouse over a scrolling page: the light stays under it.
+    if (this.opts.followScroll && fine) {
+      const onScroll = () => {
+        if (!this.pointerTarget.inside) return;
+        setAt(lastX, lastY);
+        this.needs = true;
+        if (this.visible) wake();
+      };
+      window.addEventListener("scroll", onScroll, { passive: true, capture: true });
+      this.cleanups.push(() => window.removeEventListener("scroll", onScroll, { capture: true }));
+    }
+
     // Theme and motion changes.
     this.cleanups.push(
       subscribePrefs(() => {
@@ -305,7 +339,9 @@ export class Stage {
 
   private measure(force: boolean) {
     const r = this.canvas.getBoundingClientRect();
-    const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR[this.tier]);
+    let dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR[this.tier]);
+    const cap = this.opts.maxPixels;
+    if (cap && r.width * r.height * dpr * dpr > cap) dpr = Math.max(0.5, Math.sqrt(cap / Math.max(1, r.width * r.height)));
     const w = Math.max(1, Math.round(r.width * dpr));
     const h = Math.max(1, Math.round(r.height * dpr));
     if (!force && w === this.width && h === this.height && dpr === this.dpr) return;
@@ -341,7 +377,7 @@ export class Stage {
 
     const started = performance.now();
     const more = this.scene.frame({
-      time: (now - this.start) / 1000,
+      time: FROZEN ?? (now - this.start) / 1000,
       dt,
       pointer: p,
       progress: this.progress,
@@ -391,6 +427,7 @@ export class Stage {
 
   /** Step quality down if frames are consistently slow. */
   private watch(cpuMs: number, dt: number) {
+    if (FROZEN !== null) return; // a fixed tier for visual diffs
     if (dt > 1 / 40 || cpuMs > 12) this.slowFrames++;
     else this.slowFrames = Math.max(0, this.slowFrames - 1);
     if (this.slowFrames > 90 && this.tier > 1) {
