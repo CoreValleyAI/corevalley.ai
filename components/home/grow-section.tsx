@@ -6,7 +6,7 @@
  */
 import { AppLink } from "@/components/system/app-link";
 import { Arrow } from "@/components/system/button";
-import { GlassLight } from "@/components/system/glass-light";
+import { SectionLight } from "@/components/gl/section-light";
 import { SectionHead } from "@/components/system/section";
 import { TextLink } from "@/components/system/text-link";
 import { HOME } from "@/copy/en/home";
@@ -17,9 +17,11 @@ export function GrowSection() {
   const rope = productBySlug(g.rope.product)!;
   return (
     <section aria-labelledby="grow-title" className="section-y relative isolate">
-      <GlassLight variant="c" />
+      <SectionLight />
       <div className="container-page flex flex-col gap-12">
-        <SectionHead id="grow-title" kicker={g.kicker} title={g.title} continuation={g.continuation} lead={g.lead} />
+        <div data-glass-keepout>
+          <SectionHead id="grow-title" kicker={g.kicker} title={g.title} continuation={g.continuation} lead={g.lead} />
+        </div>
         <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {g.stations.map((s, i) => {
             const product = productBySlug(s.product)!;
@@ -29,6 +31,7 @@ export function GrowSection() {
                   href={`/products/${product.slug}`}
                   data-refract
                   data-refract-bezel="20"
+                  data-glass-panel=""
                   className="lg lg-card group flex h-full flex-col gap-3 rounded-panel p-6"
                 >
                   <span className="type-title-3 text-ink">{s.title}</span>
@@ -42,7 +45,10 @@ export function GrowSection() {
             );
           })}
         </ol>
-        <div className="flex flex-col items-start justify-between gap-4 border-t border-line pt-6 md:flex-row md:items-center">
+        <div
+          className="flex flex-col items-start justify-between gap-4 border-t border-line pt-6 md:flex-row md:items-center"
+          data-glass-keepout
+        >
           <p className="type-kicker text-ink-3">{g.same}</p>
           <TextLink href={`/products/${rope.slug}`} arrow>
             {g.rope.label}

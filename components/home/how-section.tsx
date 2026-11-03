@@ -4,7 +4,7 @@
  * time is a fact), and the start — then one way in.
  */
 import { ButtonLink } from "@/components/system/button";
-import { GlassLight } from "@/components/system/glass-light";
+import { SectionLight } from "@/components/gl/section-light";
 import { SectionHead } from "@/components/system/section";
 import { HOME } from "@/copy/en/home";
 
@@ -12,15 +12,18 @@ export function HowSection() {
   const h = HOME.how;
   return (
     <section id="how" aria-labelledby="how-title" className="section-y relative isolate scroll-mt-[var(--header-h)]">
-      <GlassLight variant="a" />
+      <SectionLight />
       <div className="container-page flex flex-col gap-12">
-        <SectionHead id="how-title" kicker={h.kicker} title={h.title} continuation={h.continuation} />
+        <div data-glass-keepout>
+          <SectionHead id="how-title" kicker={h.kicker} title={h.title} continuation={h.continuation} />
+        </div>
         <ol className="grid gap-4 md:grid-cols-3 lg:gap-5">
           {h.steps.map((s, i) => (
             <li
               key={s.title}
               data-refract
               data-refract-bezel="22"
+              data-glass-panel=""
               className="lg flex flex-col gap-4 rounded-panel p-7 md:p-9"
               data-reveal
               style={{ "--i": i } as React.CSSProperties}
@@ -32,7 +35,7 @@ export function HowSection() {
           ))}
         </ol>
         <div>
-          <ButtonLink href={h.action.href} variant="glass-hydro" size="lg">
+          <ButtonLink href={h.action.href} variant="glass-hydro" size="lg" data-glass-panel="hydro">
             {h.action.label}
           </ButtonLink>
         </div>

@@ -237,3 +237,12 @@
     translate: 0 0.5rem;
   }
 }
+
+/* The still light behind CSS glass, where the scene does not run
+   (components/gl/section-light.tsx). */
+.section-light__still {
+  background: radial-gradient(42rem 30rem at 30% 45%, color-mix(in oklch, var(--hydro) 13%, transparent), transparent 70%);
+}
+:root[data-theme="light"] .section-light__still {
+  background: radial-gradient(42rem 30rem at 30% 45%, color-mix(in oklch, var(--hydro) 7%, transparent), transparent 70%);
+}

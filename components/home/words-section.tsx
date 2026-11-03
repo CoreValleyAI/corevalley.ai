@@ -14,11 +14,11 @@
  * The resting state (server render, reduced motion) is the finished
  * picture; the loop runs only while the card is on screen (PlayFrame).
  */
+import { SectionLight } from "@/components/gl/section-light";
 import { PlayFrame } from "@/components/motion/frames";
 import { AppLink } from "@/components/system/app-link";
 import { Arrow } from "@/components/system/button";
 import { Flow } from "@/components/system/drawing";
-import { GlassLight } from "@/components/system/glass-light";
 import { SectionHead } from "@/components/system/section";
 import { HOME } from "@/copy/en/home";
 import { productBySlug } from "@/copy/en/products";
@@ -157,9 +157,11 @@ export function WordsSection() {
   const w = HOME.words;
   return (
     <section aria-labelledby="words-title" className="section-y relative isolate">
-      <GlassLight variant="b" />
+      <SectionLight />
       <div className="container-page flex flex-col gap-12">
-        <SectionHead id="words-title" kicker={w.kicker} title={w.title} continuation={w.continuation} />
+        <div data-glass-keepout>
+          <SectionHead id="words-title" kicker={w.kicker} title={w.title} continuation={w.continuation} />
+        </div>
         <ul className="grid gap-4 md:grid-cols-3 lg:gap-5">
           {w.cards.map((c, i) => {
             const product = productBySlug(c.product)!;
@@ -169,6 +171,7 @@ export function WordsSection() {
                   href={`/products/${product.slug}`}
                   data-refract
                   data-refract-bezel="18"
+                  data-glass-panel=""
                   className="lg lg-card group flex h-full flex-col gap-6 rounded-panel p-6 md:p-7"
                 >
                   <PlayFrame className={`ai ai--${c.id}`}>

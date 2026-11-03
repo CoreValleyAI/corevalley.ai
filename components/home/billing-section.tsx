@@ -5,7 +5,7 @@
  * lives on /pricing.
  */
 import { NoteRef, type Notes } from "@/components/system/fact";
-import { GlassLight } from "@/components/system/glass-light";
+import { SectionLight } from "@/components/gl/section-light";
 import { SectionHead } from "@/components/system/section";
 import { TextLink } from "@/components/system/text-link";
 import { HOME } from "@/copy/en/home";
@@ -14,15 +14,18 @@ export function BillingSection({ notes }: { notes: Notes }) {
   const b = HOME.billing;
   return (
     <section aria-labelledby="billing-title" className="section-y relative isolate">
-      <GlassLight variant="b" />
+      <SectionLight />
       <div className="container-page flex flex-col gap-12">
-        <SectionHead id="billing-title" kicker={b.kicker} title={b.title} continuation={b.continuation} />
+        <div data-glass-keepout>
+          <SectionHead id="billing-title" kicker={b.kicker} title={b.title} continuation={b.continuation} />
+        </div>
         <ul className="grid gap-4 md:grid-cols-3 lg:gap-5">
           {b.tiles.map((t, i) => (
             <li
               key={t.value}
               data-refract
               data-refract-bezel="22"
+              data-glass-panel=""
               className="lg flex flex-col gap-4 rounded-panel p-7 md:p-9"
               data-reveal
               style={{ "--i": i } as React.CSSProperties}
@@ -36,7 +39,7 @@ export function BillingSection({ notes }: { notes: Notes }) {
           ))}
         </ul>
         <div>
-          <TextLink href={b.link.href} arrow>
+          <TextLink href={b.link.href} arrow data-glass-keepout>
             {b.link.label}
           </TextLink>
         </div>

@@ -11,7 +11,7 @@
  * Nepali and English (lang="ne" on the Nepali), drafted for a native-speaker
  * check.
  */
-import { GlassLight } from "@/components/system/glass-light";
+import { SectionLight } from "@/components/gl/section-light";
 import { SectionHead } from "@/components/system/section";
 import { TextLink } from "@/components/system/text-link";
 import { HOME } from "@/copy/en/home";
@@ -20,9 +20,9 @@ export function AssistantSection() {
   const a = HOME.assistant;
   return (
     <section aria-labelledby="assistant-title" className="section-y relative isolate">
-      <GlassLight variant="c" />
+      <SectionLight />
       <div className="pa container-page grid gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center lg:gap-16">
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-8" data-glass-keepout>
           <SectionHead id="assistant-title" kicker={a.kicker} title={a.title} continuation={a.continuation} lead={a.lead} />
           <div>
             <TextLink href={a.link.href} arrow>
@@ -32,7 +32,7 @@ export function AssistantSection() {
         </div>
 
         <figure className="flex flex-col gap-3">
-          <div data-refract data-refract-bezel="24" className="lg pa-window rounded-panel">
+          <div data-refract data-refract-bezel="24" data-glass-panel="" className="lg pa-window rounded-panel">
             <div className="pa-bar">
               <span className="type-body font-semibold text-ink">{a.window}</span>
               <span className="type-caption text-ink-3">{a.private}</span>
@@ -70,7 +70,9 @@ export function AssistantSection() {
               </fieldset>
             </div>
           </div>
-          <figcaption className="type-caption text-ink-3">{a.caption}</figcaption>
+          <figcaption className="type-caption text-ink-3" data-glass-keepout>
+            {a.caption}
+          </figcaption>
         </figure>
       </div>
     </section>

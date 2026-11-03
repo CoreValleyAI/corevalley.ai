@@ -11,7 +11,6 @@ import { WhatSection } from "@/components/home/what-section";
 import { WordsSection } from "@/components/home/words-section";
 import { Page } from "@/components/motion/page";
 import { createNotes, NoteList } from "@/components/system/fact";
-import { GlassLight } from "@/components/system/glass-light";
 import { SectionHead } from "@/components/system/section";
 import { TextLink } from "@/components/system/text-link";
 import { UseCaseCarousel } from "@/components/use-cases/carousel";
@@ -57,7 +56,6 @@ export default function HomePage() {
 
       {/* Your data is safe with us: the protections, drawn and listed. */}
       <section aria-labelledby="rim-title" className="section-y relative isolate">
-        <GlassLight variant="b" quiet />
         <div className="container-page">
           <ProtectionMap items={HOME.rim.items} link={HOME.rim.link}>
             <SectionHead
@@ -73,7 +71,6 @@ export default function HomePage() {
 
       {/* Use cases, in the owner's order. */}
       <section aria-labelledby="cases-title" className="section-y relative isolate overflow-x-clip">
-        <GlassLight />
         <div className="container-page mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <SectionHead
             id="cases-title"
@@ -86,7 +83,7 @@ export default function HomePage() {
             {HOME.cases.link.label}
           </TextLink>
         </div>
-        <UseCaseCarousel cases={stories} label="Use cases" pictures={false} />
+        <UseCaseCarousel cases={stories} label="Use cases" pictures={false} glass="gl" />
       </section>
 
       {/* Billing in three words. */}

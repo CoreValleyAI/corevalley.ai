@@ -18,7 +18,7 @@
  * The DOM element stays the source of truth: it carries the text, and its
  * CSS glass shows until the first glass frame and again on context loss.
  */
-import { compileProgram, uniforms } from "./core";
+import { compileProgram, compileProgramAsync, uniforms } from "./core";
 
 export interface GlassRect {
   /** Centre and half-size, drawing-buffer px, DOM orientation (y down). */
@@ -50,9 +50,17 @@ export interface GlassLook {
       (fractions of width and height), the hydro share at the centre and
       the stop where it reaches the background. */
   sky: { cx: number; cy: number; rx: number; ry: number; mix: number; stop: number };
+  /** How frosted the glass is (0 clear … 1 fully frosted); default by theme. */
+  frost?: number;
+  /** How much of the scene's light the glass gathers; default by theme. */
+  gain?: number;
+  /** A light in the scene, drawing-buffer px: the rim and glint turn toward
+      it (weight 0–1) and brighten within `reach` px of it. Without it the
+      light comes from the top left, as over the valley. */
+  light?: { x: number; y: number; weight: number; reach: number };
 }
 
-const FULLSCREEN_VS = /* glsl */ `#version 300 es
+export const FULLSCREEN_VS = /* glsl */ `#version 300 es
 out vec2 v_uv;
 void main() {
   vec2 p = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2));
@@ -117,6 +125,7 @@ uniform vec4 u_tint;          // rgb, strength
 uniform float u_textLum;
 uniform float u_minContrast;
 uniform vec2 u_light;
+uniform vec4 u_lightPos;      // a light in the scene: x, y (px), weight, reach (px); weight 0 = none
 uniform float u_specular;
 uniform float u_shadow;
 uniform float u_opacity;
@@ -206,14 +215,24 @@ void main() {
   col = pow(lin, vec3(1.0 / 2.2));
 
   // The rim: a glint where the bezel faces the light, Fresnel, and a fine edge line.
+  // With a light in the scene, the rim faces it and brightens near it.
+  vec2 Ld = u_light;
+  float boost = 1.0;
+  if (u_lightPos.z > 0.0) {
+    vec2 toL = u_lightPos.xy - px;
+    float dl = length(toL);
+    vec2 m = mix(u_light, toL / max(dl, 1e-3), u_lightPos.z * smoothstep(0.0, 2.0 * u_bezel, dl));
+    Ld = dot(m, m) > 1e-6 ? normalize(m) : u_light;
+    boost = 1.0 + 0.6 * u_lightPos.z * exp(-dl * dl / max(u_lightPos.w * u_lightPos.w, 1.0));
+  }
   float slope = bezelSlope(x) * (u_thick / u_bezel);
   vec3 N = normalize(vec3(nSmooth * slope, 1.0));
-  vec3 H = normalize(normalize(vec3(u_light, 0.75)) + vec3(0.0, 0.0, 1.0));
+  vec3 H = normalize(normalize(vec3(Ld, 0.75)) + vec3(0.0, 0.0, 1.0));
   float glint = pow(max(dot(N, H), 0.0), 40.0) * (1.0 - x);
   float fresnel = pow(1.0 - N.z, 5.0);
-  float facing = dot(nSmooth, u_light);
+  float facing = dot(nSmooth, Ld);
   float rimLine = (1.0 - smoothstep(0.0, 1.5, inside)) * (0.25 + 0.75 * max(facing, 0.0) + 0.35 * max(-facing, 0.0));
-  col += (u_specular * (u_tinted > 0.5 ? 0.5 : 1.0) + 0.35 * u_lift) * (0.55 * glint + 0.3 * fresnel + 0.7 * rimLine);
+  col += (u_specular * boost * (u_tinted > 0.5 ? 0.5 : 1.0) + 0.35 * u_lift) * (0.55 * glint + 0.3 * fresnel + 0.7 * rimLine);
   col = mix(col, vec3(1.0), 0.07 * u_lift);
 
   vec4 res = vec4(min(col, vec3(1.0)) * coverage, coverage + shadow * (1.0 - coverage));
@@ -227,10 +246,31 @@ interface Target {
   h: number;
 }
 
+export type GlassPass = ReturnType<typeof buildGlassPass>;
+
+/** The glass pass, compiled now (the valley's: it is built in one go). */
 export function createGlassPass(gl: WebGL2RenderingContext) {
-  const down = compileProgram(gl, FULLSCREEN_VS, DOWN_FS);
-  const up = compileProgram(gl, FULLSCREEN_VS, UP_FS);
-  const panel = compileProgram(gl, PANEL_VS, PANEL_FS);
+  return buildGlassPass(
+    gl,
+    compileProgram(gl, FULLSCREEN_VS, DOWN_FS),
+    compileProgram(gl, FULLSCREEN_VS, UP_FS),
+    compileProgram(gl, PANEL_VS, PANEL_FS),
+  );
+}
+
+/** The glass pass, compiled off the main thread where the browser can
+    (KHR_parallel_shader_compile): for stages that mount while the page
+    scrolls. */
+export async function createGlassPassAsync(gl: WebGL2RenderingContext) {
+  const [down, up, panel] = await Promise.all([
+    compileProgramAsync(gl, FULLSCREEN_VS, DOWN_FS),
+    compileProgramAsync(gl, FULLSCREEN_VS, UP_FS),
+    compileProgramAsync(gl, PANEL_VS, PANEL_FS),
+  ]);
+  return buildGlassPass(gl, down, up, panel);
+}
+
+function buildGlassPass(gl: WebGL2RenderingContext, down: WebGLProgram, up: WebGLProgram, panel: WebGLProgram) {
   const ud = uniforms(gl, down);
   const uu = uniforms(gl, up);
   const up_ = uniforms(gl, panel);
@@ -324,8 +364,8 @@ export function createGlassPass(gl: WebGL2RenderingContext) {
       gl.activeTexture(gl.TEXTURE0);
       // On Night Valley the scene is points of light on black: frosted, they
       // would vanish, so the glass is clearer and gathers their light.
-      gl.uniform1f(up_("u_frost"), look.dark ? 0.32 : 0.62);
-      gl.uniform1f(up_("u_gain"), look.dark ? 1.7 : 1);
+      gl.uniform1f(up_("u_frost"), look.frost ?? (look.dark ? 0.32 : 0.62));
+      gl.uniform1f(up_("u_gain"), look.gain ?? (look.dark ? 1.7 : 1));
       gl.uniform2f(up_("u_res"), width, height);
       // Lighter tints than the CSS glass: the scrim below holds the text's
       // contrast pixel by pixel, so the valley can show through.
@@ -333,6 +373,8 @@ export function createGlassPass(gl: WebGL2RenderingContext) {
       const clearText = look.dark ? 0.9 : 0.012;
       gl.uniform1f(up_("u_minContrast"), 4.5);
       gl.uniform2f(up_("u_light"), -0.6, -0.8);
+      const L = look.light;
+      gl.uniform4f(up_("u_lightPos"), L?.x ?? 0, L?.y ?? 0, L ? L.weight : 0, L?.reach ?? 0);
       gl.uniform1f(up_("u_specular"), look.dark ? 0.5 : 0.6);
       gl.uniform1f(up_("u_shadow"), look.dark ? 0.32 : 0.14);
       const skyA = look.bg.map((b, i) => b + (look.hydro[i]! - b) * look.sky.mix);

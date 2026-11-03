@@ -6,7 +6,7 @@
  * footnotes say so.
  */
 import { NoteRef, type Notes } from "@/components/system/fact";
-import { GlassLight } from "@/components/system/glass-light";
+import { SectionLight } from "@/components/gl/section-light";
 import { SectionHead } from "@/components/system/section";
 import { TextLink } from "@/components/system/text-link";
 import { HOME } from "@/copy/en/home";
@@ -18,9 +18,9 @@ export function UptimeSection({ notes }: { notes: Notes }) {
   const [, num = v("place.uptimeMinutes"), unit = ""] = /^(.*?\d+)\s*(.*)$/.exec(v("place.uptimeMinutes")) ?? [];
   return (
     <section aria-labelledby="uptime-title" className="section-y relative isolate">
-      <GlassLight variant="a" />
+      <SectionLight />
       <div className="container-page grid items-center gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-20">
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-8" data-glass-keepout>
           <SectionHead
             id="uptime-title"
             kicker={u.kicker}
@@ -40,7 +40,13 @@ export function UptimeSection({ notes }: { notes: Notes }) {
           </div>
         </div>
 
-        <div data-refract data-refract-bezel="24" className="lg flex flex-col gap-5 rounded-panel p-8 md:p-10" data-reveal>
+        <div
+          data-refract
+          data-refract-bezel="24"
+          data-glass-panel=""
+          className="lg flex flex-col gap-5 rounded-panel p-8 md:p-10"
+          data-reveal
+        >
           <p className="type-kicker text-ink-3">{u.card}</p>
           <p className="font-semibold leading-none text-ink">
             <span className="text-[clamp(3.5rem,7vw,5.5rem)] tracking-[-0.045em] tabular">{num}</span>{" "}
