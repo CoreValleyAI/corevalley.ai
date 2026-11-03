@@ -460,6 +460,7 @@ export class Stage {
       ink: ease(a.ink, b.ink),
       ink3: ease(a.ink3, b.ink3),
       hydro: ease(a.hydro, b.hydro),
+      onHydro: ease(a.onHydro, b.onHydro),
       dotOff: ease(a.dotOff, b.dotOff),
       glow2: ease(a.glow2, b.glow2),
       glow3: ease(a.glow3, b.glow3),

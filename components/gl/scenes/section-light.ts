@@ -123,7 +123,7 @@ export const createSectionLightScene: SceneFactory = async (ctx) => {
       const clearText = LUMA(pal.ink3);
       const style = (kind: PanelKind): GlassStyle =>
         kind === "hydro"
-          ? { tint: [hydro[0], hydro[1], hydro[2], dark ? 0.86 : 0.94], textLum: dark ? 0.02 : 1 }
+          ? { tint: [hydro[0], hydro[1], hydro[2], dark ? 0.86 : 0.94], textLum: LUMA(pal.onHydro) }
           : { textLum: clearText };
       const { list, busy } = panels.update(f.dt, style);
 
