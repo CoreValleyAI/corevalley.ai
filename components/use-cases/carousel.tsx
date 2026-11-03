@@ -170,7 +170,9 @@ export function UseCaseCarousel({
         data-glass-host={glass === "gl" ? "" : undefined}
         className={cn(
           "uc-track flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 [scrollbar-width:none] md:gap-5 [&::-webkit-scrollbar]:hidden",
-          glass === "gl" && "relative isolate",
+          // Room inside the scroller for the panes' shadows and the light
+          // (it clips what overflows), given back in margin.
+          glass === "gl" && "relative isolate -my-12 py-12",
         )}
         onPointerDown={hold}
         onTouchStart={hold}
@@ -223,7 +225,7 @@ export function UseCaseCarousel({
         ))}
       </div>
 
-      <div className="container-page flex items-center gap-4">
+      <div className={cn("container-page flex items-center gap-4", glass === "gl" && "relative")}>
         <div className="flex items-center gap-2">
           <button
             type="button"
