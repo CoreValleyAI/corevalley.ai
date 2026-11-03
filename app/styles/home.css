@@ -40,8 +40,16 @@
   grid-template-columns: 1.25rem 5.5rem minmax(0, 1fr);
   align-items: center;
   gap: 0.875rem;
-  opacity: calc(1 - 0.42 * var(--on));
+}
+/* Handed over: the drawing and the box step back; the words stay readable
+   (they move between two text tones that both meet contrast). */
+.what-self :is(.what-art, .what-box) {
+  opacity: calc(1 - 0.45 * var(--on));
   transition: opacity var(--dur-long) var(--ease-out);
+}
+.what-self p {
+  color: color-mix(in oklch, var(--ink-3) calc(var(--on) * 100%), var(--ink-2));
+  transition: color var(--dur-long) var(--ease-out);
 }
 .what-art {
   display: block;
@@ -112,8 +120,8 @@
     background-color var(--dur-long) var(--ease-out);
 }
 .what-us > p {
-  opacity: calc(0.5 + 0.5 * var(--on));
-  transition: opacity var(--dur-long) var(--ease-out);
+  color: color-mix(in oklch, var(--ink) calc(var(--on) * 100%), var(--ink-3));
+  transition: color var(--dur-long) var(--ease-out);
 }
 .what-foot {
   padding-top: 1.25rem;
@@ -989,9 +997,7 @@
   border-radius: 1.25rem;
   border: 1px solid color-mix(in oklch, var(--hydro) calc(var(--on) * 40%), var(--line));
   background: color-mix(in oklch, var(--hydro) calc(var(--on) * 4%), var(--bg-raised));
-  opacity: calc(0.5 + 0.5 * var(--on));
   transition:
-    opacity var(--dur-long) var(--ease-out),
     border-color var(--dur-long) var(--ease-out),
     background-color var(--dur-long) var(--ease-out),
     translate var(--dur-spring-smooth) var(--ease-spring);
@@ -1020,6 +1026,8 @@
   display: block;
   width: 100%;
   height: auto;
+  opacity: calc(0.4 + 0.6 * var(--on));
+  transition: opacity var(--dur-long) var(--ease-out);
 }
 .grow-label {
   font-family: var(--font-mono);
