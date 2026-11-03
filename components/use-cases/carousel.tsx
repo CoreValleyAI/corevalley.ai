@@ -172,7 +172,7 @@ export function UseCaseCarousel({
           "uc-track flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 [scrollbar-width:none] md:gap-5 [&::-webkit-scrollbar]:hidden",
           // Room inside the scroller for the panes' shadows and the light
           // (it clips what overflows), given back in margin.
-          glass === "gl" && "relative isolate -my-12 py-12",
+          glass === "gl" && "relative isolate -mt-12 -mb-12 pt-12 pb-14",
         )}
         onPointerDown={hold}
         onTouchStart={hold}
