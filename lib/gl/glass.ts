@@ -64,6 +64,9 @@ export interface GlassLook {
   /** Dither the glass: over a smooth scene (one soft light) its eight-bit
       blur would band. */
   dither?: boolean;
+  /** How far into the bezel (0–1 of it) the scrim reaches full strength;
+      default 1. Lower it where text sits close to the rim. */
+  scrimEdge?: number;
 }
 
 export const FULLSCREEN_VS = /* glsl */ `#version 300 es
@@ -142,6 +145,7 @@ uniform vec3 u_skyB;          // the background
 uniform vec4 u_sky;           // cx, cy, rx, ry (0-1 of the canvas)
 uniform float u_skyStop;
 uniform float u_dither;       // dither amplitude, in 8-bit steps; 0 = none
+uniform float u_scrimEdge;    // where in the bezel the scrim is at full strength
 out vec4 o;
 
 const vec3 LUMA = vec3(0.2126, 0.7152, 0.0722);
@@ -224,7 +228,7 @@ void main() {
   float den = Lb - Lk;
   // The text sits inside the flat top, never on the bezel: the rim keeps
   // its refracted light; the scrim holds the contrast where the words are.
-  if (fails && abs(den) > 1e-5) lin = mix(lin, tint, clamp((Lb - target) / den, 0.0, 1.0) * smoothstep(0.15, 1.0, x));
+  if (fails && abs(den) > 1e-5) lin = mix(lin, tint, clamp((Lb - target) / den, 0.0, 1.0) * smoothstep(0.15, u_scrimEdge, x));
   col = pow(lin, vec3(1.0 / 2.2));
 
   // The rim: a glint where the bezel faces the light, Fresnel, and a fine edge line.
@@ -397,6 +401,7 @@ function buildGlassPass(gl: WebGL2RenderingContext, down: WebGLProgram, up: WebG
       gl.uniform1f(up_("u_skyStop"), look.sky.stop);
       // Through the tint, 1.5 steps here come out at about half a step.
       gl.uniform1f(up_("u_dither"), look.dither ? 1.5 : 0);
+      gl.uniform1f(up_("u_scrimEdge"), look.scrimEdge ?? 1);
       // Device pixels per CSS pixel: the bezel and padding are set in CSS px.
       const k = width / Math.max(1, (gl.canvas as HTMLCanvasElement).clientWidth || width);
       for (const r of panels) {

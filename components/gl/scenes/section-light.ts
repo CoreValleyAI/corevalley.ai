@@ -198,6 +198,8 @@ export const createSectionLightScene: SceneFactory = async (ctx) => {
           // panes are large, and a caption may sit just below one.
           shadow: dark ? 0.32 : 0.08,
           dither: true,
+          // A pane's text can sit 16 px from its rim (a window's title bar).
+          scrimEdge: 0.7,
         });
         if (!shown) {
           shown = true;
