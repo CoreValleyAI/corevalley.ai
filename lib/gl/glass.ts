@@ -222,6 +222,9 @@ void main() {
   // in linear light would wash it out); clear glass is mixed in linear light.
   vec3 tint = pow(u_tint.rgb, vec3(2.2));
   vec3 lin = u_tinted > 0.5 ? pow(mix(col, u_tint.rgb, u_tint.a), vec3(2.2)) : mix(pow(col, vec3(2.2)), tint, u_tint.a);
+  // Under the hand the pane brightens a little; before the scrim, so the
+  // text keeps its contrast while hovered.
+  if (u_lift > 0.0) lin = pow(mix(pow(lin, vec3(1.0 / 2.2)), vec3(1.0), 0.07 * u_lift), vec3(2.2));
   float Lb = dot(lin, LUMA), Lk = dot(tint, LUMA);
   bool lightText = u_textLum > Lk;
   float target = lightText ? (u_textLum + 0.05) / u_minContrast - 0.05 : u_minContrast * (u_textLum + 0.05) - 0.05;
@@ -254,7 +257,6 @@ void main() {
   float facing = dot(nSmooth, Ld);
   float rimLine = (1.0 - smoothstep(0.0, 1.5, inside)) * (0.25 + 0.75 * max(facing, 0.0) + 0.35 * max(-facing, 0.0));
   col += (u_specular * boost * (u_tinted > 0.5 ? 0.5 : 1.0) + 0.35 * u_lift) * (0.55 * glint + 0.3 * fresnel + 0.7 * rimLine);
-  col = mix(col, vec3(1.0), 0.07 * u_lift);
 
   vec4 res = vec4(min(col, vec3(1.0)) * coverage, coverage + shadow * (1.0 - coverage));
   o = res * u_opacity;
