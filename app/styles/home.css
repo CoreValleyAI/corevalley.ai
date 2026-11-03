@@ -136,7 +136,7 @@
     padding-bottom: 1rem;
   }
   .what-self {
-    grid-template-columns: 1.25rem 7.5rem minmax(0, 1fr);
+    grid-template-columns: 1.25rem 9.5rem minmax(0, 1fr);
     gap: 1.25rem;
   }
   .what-tag {
@@ -885,13 +885,35 @@
   background: radial-gradient(circle, var(--hydro) 38%, transparent 44%) 0 0 / calc(100% / var(--allow, 53)) 100%;
 }
 .up-allow {
-  display: flex;
-  align-items: flex-start;
-  font-size: clamp(2.25rem, 4.5vw, 3.25rem);
+  color: var(--ink);
   font-weight: 600;
   line-height: 1;
-  letter-spacing: -0.03em;
-  color: var(--ink);
+}
+.up-allow__num {
+  font-size: clamp(2.75rem, 5vw, 3.75rem);
+  letter-spacing: -0.04em;
+}
+.up-allow__unit {
+  font-size: 1.25rem;
+  letter-spacing: -0.01em;
+}
+.up-year__month {
+  font-family: var(--font-mono);
+  font-size: 6px;
+  fill: var(--ink-3);
+}
+.up-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.75rem;
+  color: var(--ink-2);
+}
+.up-legend__dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: var(--hydro);
 }
 .up-leader {
   justify-self: center;
@@ -1090,7 +1112,7 @@
 }
 .how-card {
   position: relative;
-  min-height: 14rem;
+  min-height: 16.75rem;
   margin-bottom: 0.75rem;
   padding: 1.1rem 1.1rem 3.25rem;
   border-radius: 1.1rem;

@@ -20,23 +20,24 @@ import { v } from "@/lib/facts";
 /** Minutes in a 365-day year. */
 const YEAR_MINUTES = 365 * 24 * 60;
 
-/** The marked day: a Wednesday in late July. */
-const MARK = { col: 29, row: 3 };
+/** A year as a calendar: one row per month, one square per day (365). */
+const MONTHS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+const INITIALS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
+/** The marked day: 23 July. */
+const MARK = { month: 6, day: 22 };
 
 function YearGrid() {
-  // 365 days in week columns of seven: each column one dashed stroke, six
-  // units wide, whose dashes are the days.
-  let d = "";
-  for (let col = 0; col * 7 < 365; col++) {
-    const days = Math.min(7, 365 - col * 7);
-    d += `M${col * 8 + 3} 0v${days * 8 - 2}`;
-  }
-  const mx = MARK.col * 8;
-  const my = MARK.row * 8;
+  // Each month one dashed stroke, six units thick, whose dashes are its days.
+  const d = MONTHS.map((days, m) => `M14 ${m * 8 + 3}h${days * 8 - 2}`).join("");
   return (
-    <svg viewBox="-1 -1 426 58" className="up-year" aria-hidden="true" focusable="false">
+    <svg viewBox="0 -1 263 97" className="up-year" aria-hidden="true" focusable="false">
+      {INITIALS.map((l, m) => (
+        <text key={m} x="4" y={m * 8 + 5.4} className="up-year__month">
+          {l}
+        </text>
+      ))}
       <path d={d} className="up-year__days" strokeWidth="6" strokeDasharray="6 2" />
-      <rect x={mx - 1} y={my - 1} width="8" height="8" rx="1" className="up-year__mark" />
+      <rect x={14 + MARK.day * 8 - 1} y={MARK.month * 8 - 1} width="8" height="8" rx="1" className="up-year__mark" />
     </svg>
   );
 }
@@ -45,6 +46,8 @@ export function UptimeSection({ notes }: { notes: Notes }) {
   const u = HOME.uptime;
   // The most downtime the commitment allows in a year, in minutes (≈ 53).
   const allowance = (YEAR_MINUTES * (100 - parseFloat(v("place.uptime")))) / 100;
+  // "≈ 53 minutes" → the number, set large, and its unit.
+  const [, num = v("place.uptimeMinutes"), unit = ""] = /^(.*?\d+)\s*(.*)$/.exec(v("place.uptimeMinutes")) ?? [];
   return (
     <section aria-labelledby="uptime-title" className="section-y relative isolate">
       <GlassLight variant="a" quiet />
@@ -85,7 +88,13 @@ export function UptimeSection({ notes }: { notes: Notes }) {
             <div className="up-day" aria-hidden="true">
               <span className="up-day__allow" style={{ "--allow": allowance } as React.CSSProperties} />
             </div>
-            <p className="up-panel__note">{u.day}</p>
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+              <p className="up-panel__note">{u.day}</p>
+              <p className="up-legend">
+                <span aria-hidden="true" className="up-legend__dot" />
+                {u.legend}
+              </p>
+            </div>
           </figure>
 
           <span aria-hidden="true" className="up-leader" />
@@ -96,7 +105,7 @@ export function UptimeSection({ notes }: { notes: Notes }) {
               {u.panels.allowance}
             </figcaption>
             <p className="up-allow">
-              <F id="place.uptimeMinutes" />
+              <span className="up-allow__num">{num}</span> <span className="up-allow__unit">{unit}</span>
               <NoteRef notes={notes} id="place.uptimeMinutes" />
             </p>
             <p className="type-body font-medium text-ink">{u.allowanceSub}</p>

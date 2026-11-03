@@ -316,6 +316,7 @@ export const HOME = {
     panels: { year: "One year", day: "One day", allowance: "The allowance" },
     year: "Every square is a day",
     day: "Every dot is a minute",
+    legend: "The whole year's allowance",
     allowanceSub: "a year, at most",
     allowanceBody: "less than one hour, out of a whole year.",
     caption: "Facility commitment · illustration",
