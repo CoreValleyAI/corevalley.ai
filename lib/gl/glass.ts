@@ -58,6 +58,9 @@ export interface GlassLook {
       it (weight 0–1) and brighten within `reach` px of it. Without it the
       light comes from the top left, as over the valley. */
   light?: { x: number; y: number; weight: number; reach: number };
+  /** The drop shadow's strength (0–1); default by theme. Given, it is drawn
+      out to where it ends instead of stopping at the pane's quad. */
+  shadow?: number;
 }
 
 export const FULLSCREEN_VS = /* glsl */ `#version 300 es
@@ -376,7 +379,7 @@ function buildGlassPass(gl: WebGL2RenderingContext, down: WebGLProgram, up: WebG
       const L = look.light;
       gl.uniform4f(up_("u_lightPos"), L?.x ?? 0, L?.y ?? 0, L ? L.weight : 0, L?.reach ?? 0);
       gl.uniform1f(up_("u_specular"), look.dark ? 0.5 : 0.6);
-      gl.uniform1f(up_("u_shadow"), look.dark ? 0.32 : 0.14);
+      gl.uniform1f(up_("u_shadow"), look.shadow ?? (look.dark ? 0.32 : 0.14));
       const skyA = look.bg.map((b, i) => b + (look.hydro[i]! - b) * look.sky.mix);
       gl.uniform3fv(up_("u_skyA"), skyA);
       gl.uniform3fv(up_("u_skyB"), look.bg);
@@ -398,7 +401,8 @@ function buildGlassPass(gl: WebGL2RenderingContext, down: WebGLProgram, up: WebG
         gl.uniform1f(up_("u_thick"), bezel * 1.9);
         gl.uniform1f(up_("u_ior"), 1.5);
         gl.uniform1f(up_("u_disp"), 0.03);
-        gl.uniform1f(up_("u_pad"), 28 * k);
+        // The shadow ends 2.05 bezels beyond the pane (offset plus falloff).
+        gl.uniform1f(up_("u_pad"), look.shadow === undefined ? 28 * k : Math.max(28 * k, bezel * 2.1 + 2));
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       }
       gl.bindVertexArray(null);

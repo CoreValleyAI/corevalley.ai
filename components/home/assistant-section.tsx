@@ -31,7 +31,7 @@ export function AssistantSection() {
           </div>
         </div>
 
-        <figure className="flex flex-col gap-3">
+        <figure className="flex flex-col gap-4">
           <div data-refract data-refract-bezel="24" data-glass-panel="" className="lg pa-window rounded-panel">
             <div className="pa-bar">
               <span className="type-body font-semibold text-ink">{a.window}</span>
