@@ -114,52 +114,52 @@ export function MiniGpu({
   className?: string;
 }) {
   const k = w / 120;
-  const s = (n: number) => n * k;
-  const board = { x: x + s(8), y: y + s(4), w: s(108), h: s(56) };
-  const die = { x: x + s(52), y: y + s(19), w: s(22), h: s(22) };
-  const hbm = [0, 1, 2].flatMap((r) => [
-    { x: die.x - s(9), y: die.y + s(r * 7.6) + s(0.4) },
-    { x: die.x + die.w + s(2), y: die.y + s(r * 7.6) + s(0.4) },
-  ]);
-  const fingers: number[] = [];
-  for (let fx = s(14); fx <= s(76); fx += s(3)) if (fx < s(36) || fx > s(40)) fingers.push(fx);
+  /** Scale to the card's size, rounded so the markup stays small. */
+  const s = (n: number) => r2(n * k);
+  const X = (n: number) => r2(x + n * k);
+  const Y = (n: number) => r2(y + n * k);
+  const box = (bx: number, by: number, bw: number, bh: number) => `M${X(bx)} ${Y(by)}h${s(bw)}v${s(bh)}h${-s(bw)}z`;
+
+  // Repeated parts as single paths: exhaust slots, edge fingers, voltage
+  // regulation, HBM stacks, compute clusters.
+  let slots = "";
+  for (let i = 0; i < 6; i++) slots += box(2.5, 8 + i * 8, 3, 5);
+  let fingers = "";
+  for (let fx = 14; fx <= 76; fx += 3) if (fx < 36 || fx > 40) fingers += box(fx, 60, 1.6, 4);
+  let vrm = "";
+  for (let i = 0; i < 6; i++) vrm += box(18 + i * 5.2, 12, 3.6, 3.6);
+  let hbm = "";
+  for (let r = 0; r < 3; r++) hbm += box(43, 19.4 + r * 7.6, 7, 6.4) + box(76, 19.4 + r * 7.6, 7, 6.4);
+  let clusters = "";
+  for (let r = 0; r < 2; r++) for (let c = 0; c < 4; c++) clusters += box(53.6 + c * 4.9, 20.6 + r * 10.2, 4, 8.6);
+
   const n = slices ?? 0;
   const dieLit = slices ? 0 : (lit ?? 1);
   return (
     <g className={cn("mini-gpu", className)}>
       {/* Bracket with exhaust slots */}
-      <rect x={x} y={y + s(2)} width={s(8)} height={s(60)} rx={s(1)} className="fill-bg-sunken stroke-line-strong" strokeWidth="0.8" />
-      {[0, 1, 2, 3, 4, 5].map((i) => (
-        <rect key={i} x={x + s(2.5)} y={y + s(8 + i * 8)} width={s(3)} height={s(5)} rx={s(1)} className="fill-none stroke-ink-4" strokeWidth="0.5" />
-      ))}
-      {/* Board, PCIe edge and its gold fingers */}
-      <rect x={board.x} y={board.y} width={board.w} height={board.h} rx={s(2)} className="fill-bg-raised stroke-line-strong" strokeWidth="1" />
-      {fingers.map((fx) => (
-        <rect key={fx} x={x + fx} y={board.y + board.h} width={s(1.6)} height={s(4)} className="fill-ink-4" opacity="0.6" />
-      ))}
-      {/* Cooler footprint, removed */}
-      <rect x={board.x + s(4)} y={board.y + s(4)} width={board.w - s(8)} height={board.h - s(8)} rx={s(2)} className="fill-none stroke-ink-4" strokeWidth="0.6" strokeDasharray="2.5 2.5" />
-      {/* Voltage regulation */}
-      {[0, 1, 2, 3, 4, 5].map((i) => (
-        <rect key={i} x={board.x + s(10 + i * 5.2)} y={board.y + s(8)} width={s(3.6)} height={s(3.6)} rx={s(0.6)} className="fill-bg-sunken stroke-line-strong" strokeWidth="0.6" />
-      ))}
-      {/* Power connector */}
-      <rect x={board.x + board.w - s(14)} y={board.y + s(3)} width={s(10)} height={s(5)} rx={s(0.8)} className="fill-bg-sunken stroke-line-strong" strokeWidth="0.6" />
+      <rect x={X(0)} y={Y(2)} width={s(8)} height={s(60)} rx={s(1)} className="fill-bg-sunken stroke-line-strong" strokeWidth="0.8" />
+      <path d={slots} className="fill-none stroke-ink-4" strokeWidth="0.5" />
+      {/* Board, PCIe edge and its fingers, the removed cooler's footprint */}
+      <rect x={X(8)} y={Y(4)} width={s(108)} height={s(56)} rx={s(2)} className="fill-bg-raised stroke-line-strong" strokeWidth="1" />
+      <path d={fingers} className="fill-ink-4" opacity="0.6" />
+      <rect x={X(12)} y={Y(8)} width={s(100)} height={s(48)} rx={s(2)} className="fill-none stroke-ink-4" strokeWidth="0.6" strokeDasharray="2.5 2.5" />
+      {/* Voltage regulation and the power connector */}
+      <path d={vrm} className="fill-bg-sunken stroke-line-strong" strokeWidth="0.6" />
+      <rect x={X(102)} y={Y(7)} width={s(10)} height={s(5)} rx={s(0.8)} className="fill-bg-sunken stroke-line-strong" strokeWidth="0.6" />
       {/* Package: substrate, six HBM stacks, the die */}
-      <rect x={die.x - s(12)} y={die.y - s(4)} width={die.w + s(24)} height={die.h + s(8)} rx={s(1.5)} className="fill-bg-sunken stroke-line-strong" strokeWidth="0.8" />
-      {hbm.map((h, i) => (
-        <rect key={i} x={h.x} y={h.y} width={s(7)} height={s(6.4)} rx={s(0.6)} className="fill-bg-raised stroke-hydro" strokeWidth="0.6" />
-      ))}
+      <rect x={X(40)} y={Y(15)} width={s(46)} height={s(30)} rx={s(1.5)} className="fill-bg-sunken stroke-line-strong" strokeWidth="0.8" />
+      <path d={hbm} className="fill-bg-raised stroke-hydro" strokeWidth="0.6" />
       {n > 0 ? (
         Array.from({ length: n }, (_, i) => {
-          const sw = die.w / n;
+          const sw = 22 / n;
           return (
             <rect
               key={i}
-              x={die.x + i * sw + s(0.3)}
-              y={die.y}
-              width={sw - s(0.6)}
-              height={die.h}
+              x={X(52 + i * sw + 0.3)}
+              y={Y(19)}
+              width={s(sw - 0.6)}
+              height={s(22)}
               rx={s(0.5)}
               className={cn("mini-gpu__slice", i < (lit ?? 0) ? "fill-hydro" : "fill-bg-raised stroke-line-strong")}
               strokeWidth="0.5"
@@ -168,33 +168,22 @@ export function MiniGpu({
         })
       ) : (
         <rect
-          x={die.x}
-          y={die.y}
-          width={die.w}
-          height={die.h}
+          x={X(52)}
+          y={Y(19)}
+          width={s(22)}
+          height={s(22)}
           rx={s(1)}
           className={cn("mini-gpu__die", dieLit ? "fill-hydro" : "fill-bg-raised stroke-line-strong")}
           strokeWidth="0.6"
         />
       )}
       {/* Compute clusters on a lit die */}
-      {!n && dieLit
-        ? [0, 1].flatMap((r) =>
-            [0, 1, 2, 3].map((c) => (
-              <rect
-                key={`${r}${c}`}
-                x={die.x + s(1.6 + c * 4.9)}
-                y={die.y + s(1.6 + r * 10.2)}
-                width={s(4)}
-                height={s(8.6)}
-                rx={s(0.4)}
-                className="fill-none stroke-on-hydro"
-                strokeWidth="0.45"
-                opacity="0.7"
-              />
-            )),
-          )
-        : null}
+      {!n && dieLit ? <path d={clusters} className="fill-none stroke-on-hydro" strokeWidth="0.45" opacity="0.7" /> : null}
     </g>
   );
+}
+
+/** Two decimals: enough for any drawing, and short in the markup. */
+function r2(n: number) {
+  return Math.round(n * 100) / 100;
 }

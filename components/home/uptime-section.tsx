@@ -24,18 +24,18 @@ const YEAR_MINUTES = 365 * 24 * 60;
 const MARK = { col: 29, row: 3 };
 
 function YearGrid() {
-  // 365 days in week columns of seven, drawn as one path.
+  // 365 days in week columns of seven: each column one dashed stroke, six
+  // units wide, whose dashes are the days.
   let d = "";
-  for (let i = 0; i < 365; i++) {
-    const col = Math.floor(i / 7);
-    const row = i % 7;
-    d += `M${col * 8} ${row * 8}h6v6h-6z`;
+  for (let col = 0; col * 7 < 365; col++) {
+    const days = Math.min(7, 365 - col * 7);
+    d += `M${col * 8 + 3} 0v${days * 8 - 2}`;
   }
   const mx = MARK.col * 8;
   const my = MARK.row * 8;
   return (
     <svg viewBox="-1 -1 426 58" className="up-year" aria-hidden="true" focusable="false">
-      <path d={d} className="up-year__days" />
+      <path d={d} className="up-year__days" strokeWidth="6" strokeDasharray="6 2" />
       <rect x={mx - 1} y={my - 1} width="8" height="8" rx="1" className="up-year__mark" />
     </svg>
   );

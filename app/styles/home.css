@@ -191,6 +191,10 @@
   fill: color-mix(in oklch, var(--hydro) calc(var(--on) * 100%), var(--ink-4));
   transition: fill var(--dur-long) var(--ease-out);
 }
+.what-led-dots {
+  stroke: color-mix(in oklch, var(--hydro) calc(var(--on) * 100%), var(--ink-4));
+  transition: stroke var(--dur-long) var(--ease-out);
+}
 .what-live {
   stroke: color-mix(in oklch, var(--hydro) calc(var(--on) * 100%), var(--ink-4));
   transition: stroke var(--dur-long) var(--ease-out);
@@ -252,11 +256,12 @@
   font-weight: 600;
   fill: var(--hydro);
 }
-.ai-dot {
-  fill: var(--ink-3);
+.ai-dots {
+  fill: none;
+  stroke: var(--ink-3);
 }
-.ai-dot--tuned {
-  fill: var(--hydro);
+.ai-dots--tuned {
+  stroke: var(--hydro);
 }
 .ai-answer {
   stroke: var(--hydro);
@@ -269,17 +274,17 @@
   animation-play-state: running;
 }
 /* Training: the blank model learns, dot by dot. */
-:root[data-motion="full"] .ai--train[data-play] .ai-dot {
+:root[data-motion="full"] .ai--train[data-play] .ai-dots {
   animation: ai-learn 5.6s ease-in-out infinite;
   animation-delay: calc(var(--k) * 0.14s);
 }
 /* Fine-tuning: a few dots of a ready model change. */
-:root[data-motion="full"] .ai--tune[data-play] .ai-dot--tuned {
+:root[data-motion="full"] .ai--tune[data-play] .ai-dots--tuned {
   animation: ai-tune 3.6s ease-in-out infinite;
   animation-delay: calc(var(--k) * 0.12s);
 }
 /* Inference: the question is read column by column; the answer is written. */
-:root[data-motion="full"] .ai--run[data-play] .ai-dot {
+:root[data-motion="full"] .ai--run[data-play] .ai-dots {
   animation: ai-read 2.4s ease-in-out infinite;
   animation-delay: calc(var(--c) * 0.12s);
 }
@@ -291,37 +296,37 @@
 @keyframes ai-learn {
   0%,
   8% {
-    fill: var(--dot-off);
+    stroke: var(--dot-off);
   }
   40%,
   86% {
-    fill: var(--ink-3);
+    stroke: var(--ink-3);
   }
   100% {
-    fill: var(--dot-off);
+    stroke: var(--dot-off);
   }
 }
 @keyframes ai-tune {
   0%,
   15% {
-    fill: var(--ink-3);
+    stroke: var(--ink-3);
   }
   45%,
   85% {
-    fill: var(--hydro);
+    stroke: var(--hydro);
   }
   100% {
-    fill: var(--ink-3);
+    stroke: var(--ink-3);
   }
 }
 @keyframes ai-read {
   0%,
   40%,
   100% {
-    fill: var(--ink-3);
+    stroke: var(--ink-3);
   }
   18% {
-    fill: var(--hydro);
+    stroke: var(--hydro);
   }
 }
 @keyframes ai-write {
@@ -858,7 +863,8 @@
   height: auto;
 }
 .up-year__days {
-  fill: color-mix(in oklch, var(--hydro) 28%, var(--bg-sunken));
+  fill: none;
+  stroke: color-mix(in oklch, var(--hydro) 28%, var(--bg-sunken));
 }
 .up-year__mark {
   fill: none;

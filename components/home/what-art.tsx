@@ -14,6 +14,11 @@ import type { WhatPart } from "@/copy/en/home";
 const frame = "fill-bg-raised stroke-line-strong";
 const sunk = "fill-bg-sunken stroke-line-strong";
 
+/** Repeated parts are drawn as one path each, so the markup stays small. */
+const box = (x: number, y: number, w: number, h: number) => `M${r2(x)} ${r2(y)}h${w}v${h}h${-w}z`;
+const dot = (x: number, y: number) => `M${r2(x)} ${r2(y)}h0`;
+const r2 = (n: number) => Math.round(n * 100) / 100;
+
 function Servers() {
   return (
     <>
@@ -21,24 +26,19 @@ function Servers() {
       <rect x="30" y="2" width="56" height="66" rx="2" className={frame} strokeWidth="1" />
       <line x1="34" y1="4" x2="34" y2="66" className="stroke-ink-4" strokeWidth="0.6" />
       <line x1="82" y1="4" x2="82" y2="66" className="stroke-ink-4" strokeWidth="0.6" />
-      {Array.from({ length: 8 }, (_, i) => {
-        const y = 6 + i * 7.4;
-        return (
-          <g key={i}>
-            <rect x="36" y={y} width="44" height="6.2" rx="0.8" className={sunk} strokeWidth="0.6" />
-            {Array.from({ length: 6 }, (_, j) => (
-              <rect key={j} x={38 + j * 4.4} y={y + 1} width="3.4" height="4.2" rx="0.4" className="fill-none stroke-ink-4" strokeWidth="0.45" />
-            ))}
-            <line x1="66" y1={y + 3.1} x2="73" y2={y + 3.1} className="stroke-ink-4" strokeWidth="0.45" />
-            <circle cx="77" cy={y + 3.1} r="0.95" className="what-led" style={{ "--k": i } as React.CSSProperties} />
-          </g>
-        );
-      })}
+      <path d={Array.from({ length: 8 }, (_, i) => box(36, 6 + i * 7.4, 44, 6.2)).join("")} className={sunk} strokeWidth="0.6" />
+      <path
+        d={Array.from({ length: 48 }, (_, n) => box(38 + (n % 6) * 4.4, 7 + Math.floor(n / 6) * 7.4, 3.4, 4.2)).join("")}
+        className="fill-none stroke-ink-4"
+        strokeWidth="0.45"
+      />
+      <path d={Array.from({ length: 8 }, (_, i) => `M66 ${r2(9.1 + i * 7.4)}h7`).join("")} className="stroke-ink-4" strokeWidth="0.45" />
+      {Array.from({ length: 8 }, (_, i) => (
+        <circle key={i} cx="77" cy={r2(9.1 + i * 7.4)} r="0.95" className="what-led" style={{ "--k": i } as React.CSSProperties} />
+      ))}
       {/* Power distribution strip */}
       <rect x="90" y="6" width="5" height="58" rx="1" className={sunk} strokeWidth="0.6" />
-      {Array.from({ length: 8 }, (_, i) => (
-        <circle key={i} cx="92.5" cy={10 + i * 7} r="0.9" className="fill-ink-4" />
-      ))}
+      <path d={Array.from({ length: 8 }, (_, i) => dot(92.5, 10 + i * 7)).join("")} className="stroke-ink-4" strokeWidth="1.8" strokeLinecap="round" />
       <line x1="34" y1="70" x2="38" y2="70" className="stroke-line-strong" strokeWidth="1" />
       <line x1="78" y1="70" x2="82" y2="70" className="stroke-line-strong" strokeWidth="1" />
     </>
@@ -52,26 +52,11 @@ function Power() {
       <rect x="4" y="8" width="40" height="58" rx="2" className={frame} strokeWidth="1" />
       <rect x="9" y="13" width="30" height="9" rx="1" className={sunk} strokeWidth="0.6" />
       <polyline points="11,19 15,16 19,18 23,15 27,17 31,15 35,17" className="what-live fill-none" strokeWidth="0.7" />
-      {Array.from({ length: 12 }, (_, i) => (
-        <rect
-          key={i}
-          x={9 + (i % 3) * 10.4}
-          y={26 + Math.floor(i / 3) * 9}
-          width="8.6"
-          height="7.2"
-          rx="0.8"
-          className={sunk}
-          strokeWidth="0.55"
-        />
-      ))}
-      {[0, 1, 2].map((i) => (
-        <line key={i} x1={11 + i * 10.4} y1="24.6" x2={15 + i * 10.4} y2="24.6" className="stroke-ink-4" strokeWidth="0.6" />
-      ))}
+      <path d={Array.from({ length: 12 }, (_, i) => box(9 + (i % 3) * 10.4, 26 + Math.floor(i / 3) * 9, 8.6, 7.2)).join("")} className={sunk} strokeWidth="0.55" />
+      <path d={[0, 1, 2].map((i) => `M${r2(11 + i * 10.4)} 24.6h4`).join("")} className="stroke-ink-4" strokeWidth="0.6" />
       {/* Generator: body, radiator fins, exhaust, panel, skid */}
       <rect x="56" y="28" width="58" height="36" rx="2" className={frame} strokeWidth="1" />
-      {Array.from({ length: 9 }, (_, i) => (
-        <line key={i} x1={92 + i * 2.4} y1="32" x2={92 + i * 2.4} y2="60" className="stroke-ink-4" strokeWidth="0.5" />
-      ))}
+      <path d={Array.from({ length: 9 }, (_, i) => `M${r2(92 + i * 2.4)} 32v28`).join("")} className="stroke-ink-4" strokeWidth="0.5" />
       <rect x="62" y="16" width="6" height="12" rx="0.8" className={sunk} strokeWidth="0.6" />
       <path d="M61 16 h8" className="stroke-line-strong" strokeWidth="0.8" />
       <rect x="62" y="34" width="22" height="13" rx="1" className={sunk} strokeWidth="0.6" />
@@ -114,9 +99,7 @@ function Cooling() {
     <>
       {/* Chiller: two fans over the coil, supply and return pipes */}
       <rect x="14" y="16" width="102" height="44" rx="3" className={frame} strokeWidth="1" />
-      {Array.from({ length: 24 }, (_, i) => (
-        <line key={i} x1={18 + i * 4.1} y1="56" x2={18 + i * 4.1} y2="59" className="stroke-ink-4" strokeWidth="0.45" />
-      ))}
+      <path d={Array.from({ length: 24 }, (_, i) => `M${r2(18 + i * 4.1)} 56v3`).join("")} className="stroke-ink-4" strokeWidth="0.45" />
       <Fan cx={44} cy={36} />
       <Fan cx={86} cy={36} />
       <path d="M14 26 H2" className="what-live fill-none" strokeWidth="1.4" />
@@ -150,24 +133,24 @@ function Network() {
       <circle cx="114" cy="42" r="1" className="fill-none stroke-ink-4" strokeWidth="0.5" />
       <rect x="10" y="26" width="100" height="22" rx="1.5" className={frame} strokeWidth="1" />
       {/* Two rows of ports, each with a link light */}
-      {Array.from({ length: 24 }, (_, i) => {
-        const col = i % 12;
-        const row = Math.floor(i / 12);
-        const x = 14 + col * 6.1;
-        const y = 30 + row * 8.4;
-        return (
-          <g key={i}>
-            <rect x={x} y={y + 1.6} width="4.6" height="4.4" rx="0.4" className={sunk} strokeWidth="0.5" />
-            <circle
-              cx={x + 2.3}
-              cy={y + 0.4}
-              r="0.6"
-              className={(col * 5 + row * 3) % 4 ? "what-led" : "fill-ink-4"}
-              style={{ "--k": col } as React.CSSProperties}
-            />
-          </g>
-        );
-      })}
+      <path
+        d={Array.from({ length: 24 }, (_, i) => box(14 + (i % 12) * 6.1, 31.6 + Math.floor(i / 12) * 8.4, 4.6, 4.4)).join("")}
+        className={sunk}
+        strokeWidth="0.5"
+      />
+      {/* Link lights: most ports up, a few idle */}
+      {[true, false].map((up) => (
+        <path
+          key={String(up)}
+          d={Array.from({ length: 24 }, (_, i) => i)
+            .filter((i) => Boolean(((i % 12) * 5 + Math.floor(i / 12) * 3) % 4) === up)
+            .map((i) => dot(16.3 + (i % 12) * 6.1, 30.4 + Math.floor(i / 12) * 8.4))
+            .join("")}
+          className={up ? "what-led-dots" : "stroke-ink-4"}
+          strokeWidth="1.2"
+          strokeLinecap="round"
+        />
+      ))}
       {/* Four uplink ports */}
       {[0, 1, 2, 3].map((i) => (
         <rect key={i} x={91 + i * 5} y="34" width="4" height="7" rx="0.5" className="fill-bg-sunken stroke-hydro" strokeWidth="0.6" />
@@ -186,16 +169,14 @@ function Network() {
 }
 
 function Security() {
-  const mesh: React.ReactNode[] = [];
-  for (let x = 10; x <= 66; x += 5) mesh.push(<line key={`v${x}`} x1={x} y1="6" x2={x} y2="66" />);
-  for (let y = 6; y <= 66; y += 5) mesh.push(<line key={`h${y}`} x1="8" y1={y} x2="68" y2={y} />);
+  let mesh = "";
+  for (let x = 10; x <= 66; x += 5) mesh += `M${x} 6V66`;
+  for (let y = 6; y <= 66; y += 5) mesh += `M8 ${y}H68`;
   return (
     <>
       {/* Cage panel and its mesh */}
       <rect x="6" y="4" width="64" height="64" rx="1.5" className="fill-bg-sunken stroke-line-strong" strokeWidth="1" />
-      <g className="stroke-ink-4" strokeWidth="0.35" opacity="0.8">
-        {mesh}
-      </g>
+      <path d={mesh} className="stroke-ink-4" strokeWidth="0.35" opacity="0.8" />
       {/* Door, hinges, padlock */}
       <rect x="22" y="10" width="32" height="54" rx="1" className="fill-none stroke-line-strong" strokeWidth="1" />
       <rect x="20.5" y="16" width="3" height="5" className="fill-bg-raised stroke-line-strong" strokeWidth="0.5" />

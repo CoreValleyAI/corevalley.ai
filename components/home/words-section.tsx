@@ -29,26 +29,35 @@ type Word = "train" | "tune" | "run";
 const TUNED = new Set([3, 9, 17, 22, 24, 30, 33, 39, 45]);
 
 function Model({ word }: { word: Word }) {
-  const dots: React.ReactNode[] = [];
+  // The 49 dots, grouped by how they animate: diagonals while training,
+  // columns while answering, the changed dots while fine-tuning. One path
+  // per group, each dot a zero-length stroke with a round cap.
+  const groups = new Map<string, { d: string; tuned: boolean; style: React.CSSProperties }>();
   for (let r = 0; r < 7; r++)
     for (let c = 0; c < 7; c++) {
-      const i = r * 7 + c;
-      const tuned = word === "tune" && TUNED.has(i);
-      dots.push(
-        <circle
-          key={i}
-          cx={98 + c * 7.4}
-          cy={38 + r * 7.4}
-          r="2"
-          className={tuned ? "ai-dot ai-dot--tuned" : "ai-dot"}
-          style={{ "--k": (r + c) % 13, "--c": c, "--i": i } as React.CSSProperties}
-        />,
-      );
+      const tuned = word === "tune" && TUNED.has(r * 7 + c);
+      const key = word === "train" ? `k${(r + c) % 13}` : word === "run" ? `c${c}` : tuned ? "t" : "o";
+      const g = groups.get(key) ?? {
+        d: "",
+        tuned,
+        style: { "--k": (r + c) % 13, "--c": c } as React.CSSProperties,
+      };
+      g.d += `M${Math.round((98 + c * 7.4) * 10) / 10} ${Math.round((38 + r * 7.4) * 10) / 10}h0`;
+      groups.set(key, g);
     }
   return (
     <g>
       <rect x="90" y="30" width="60" height="60" rx="6" className="fill-bg-sunken stroke-line-strong" strokeWidth="0.8" />
-      {dots}
+      {[...groups].map(([key, g]) => (
+        <path
+          key={key}
+          d={g.d}
+          className={g.tuned ? "ai-dots ai-dots--tuned" : "ai-dots"}
+          strokeWidth="4"
+          strokeLinecap="round"
+          style={g.style}
+        />
+      ))}
       <text x="120" y="104" textAnchor="middle" className="ai-label">
         Model
       </text>
