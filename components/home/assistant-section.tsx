@@ -56,17 +56,19 @@ export function AssistantSection() {
               ))}
             </div>
 
-            <fieldset className="pa-suggest">
-              <legend className="type-caption mb-2.5 text-ink-3">{a.pick}</legend>
-              <div className="flex flex-wrap gap-2">
-                {a.questions.map((q, i) => (
-                  <label key={q.id} className="pa-chip">
-                    <input type="radio" name="pa-q" id={`pa-${q.id}`} value={q.id} defaultChecked={i === 0} className="sr-only" />
-                    {q.chip}
-                  </label>
-                ))}
-              </div>
-            </fieldset>
+            <div className="pa-suggest">
+              <fieldset>
+                <legend className="type-caption mb-2.5 text-ink-3">{a.pick}</legend>
+                <div className="flex flex-wrap gap-2">
+                  {a.questions.map((q, i) => (
+                    <label key={q.id} className="pa-chip">
+                      <input type="radio" name="pa-q" id={`pa-${q.id}`} value={q.id} defaultChecked={i === 0} className="sr-only" />
+                      {q.chip}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            </div>
           </div>
           <figcaption className="type-caption text-ink-3">{a.caption}</figcaption>
         </figure>
