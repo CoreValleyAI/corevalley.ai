@@ -26,9 +26,9 @@ const CELLS = [
     body: "Invoiced in Nepalese rupees, so there is no exchange-rate margin.",
   },
   {
-    value: "eSewa · Khalti",
+    value: "Digital",
     label: "Ways to pay",
-    body: "Or bank transfer and invoice. VAT at the statutory rate.",
+    body: "Pay digitally, by bank transfer or by invoice. VAT at the statutory rate.",
   },
 ] as const;
 

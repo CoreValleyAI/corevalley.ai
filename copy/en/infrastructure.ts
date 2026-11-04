@@ -29,11 +29,11 @@ export const INFRASTRUCTURE = {
     kicker: "Capacity",
     title: "Starting with H200 NVL.",
     continuation: "Growing from there.",
-    lead: "Our first NVIDIA H200 NVL GPUs are being commissioned now. We'll scale to sixteen GPUs, then add other NVIDIA GPUs as demand grows.",
+    lead: "We start with NVIDIA H200 NVL GPUs, add more of them as customers come on board, then other NVIDIA GPUs as demand grows.",
     link: { href: "/hardware", label: "The GPU" },
     steps: [
-      { label: "Now", title: "NVIDIA H200 NVL", body: "Being commissioned; enterprise early access is open." },
-      { label: "Next", title: "Sixteen GPUs", body: "More H200 NVL as early-access customers come on board." },
+      { label: "Now", title: "NVIDIA H200 NVL", body: "Our first GPUs, in our datacentre in the Kathmandu Valley." },
+      { label: "Next", title: "More H200 NVL", body: "More of the same GPU as customers come on board." },
       { label: "Later", title: "More GPUs", body: "Other NVIDIA GPUs and new generations, as demand grows." },
     ],
   },
@@ -42,20 +42,6 @@ export const INFRASTRUCTURE = {
     title: "Runs on hydropower.",
     continuation: "Nepal's own.",
     lead: "Our datacentre runs on Nepal's grid, which is built on hydropower. We say it plainly and footnote it, rather than dressing it up as a certificate we don't hold.",
-  },
-  datacentre: {
-    kicker: "The facility",
-    title: "What we can say about the building.",
-    lead: "Enough to judge it, nothing that helps anyone break in.",
-    points: [
-      { title: "In the Kathmandu Valley", body: "In Nepal, close to the teams who use it." },
-      { title: "Being commissioned", body: "Our first GPUs are coming soon; enterprise early access is open." },
-      { title: "99.99 % facility uptime", body: "The facility's commitment for power, cooling and the building." },
-      {
-        title: "Details on request",
-        body: "We don't publish the address or security arrangements. Regulated customers get a written description of their data flows during onboarding.",
-      },
-    ],
   },
   network: {
     kicker: "Network",

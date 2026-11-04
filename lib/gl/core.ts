@@ -34,6 +34,40 @@ export function compileProgram(gl: WebGL2RenderingContext, vs: string, fs: strin
   return p;
 }
 
+/**
+ * The same program, without blocking the main thread where the driver can
+ * compile in parallel (KHR_parallel_shader_compile): the status is polled
+ * once a frame until it is done. Without the extension it compiles now.
+ */
+export async function compileProgramAsync(gl: WebGL2RenderingContext, vs: string, fs: string): Promise<WebGLProgram> {
+  const ext = gl.getExtension("KHR_parallel_shader_compile") as { COMPLETION_STATUS_KHR: number } | null;
+  if (!ext) return compileProgram(gl, vs, fs);
+  const shader = (type: number, src: string) => {
+    const s = gl.createShader(type)!;
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    return s;
+  };
+  const p = gl.createProgram()!;
+  const v = shader(gl.VERTEX_SHADER, vs);
+  const f = shader(gl.FRAGMENT_SHADER, fs);
+  gl.attachShader(p, v);
+  gl.attachShader(p, f);
+  gl.linkProgram(p);
+  while (!gl.isContextLost() && !gl.getProgramParameter(p, ext.COMPLETION_STATUS_KHR)) {
+    await new Promise((r) => requestAnimationFrame(r));
+  }
+  if (!gl.getProgramParameter(p, gl.LINK_STATUS) && !gl.isContextLost()) {
+    const log = gl.getShaderInfoLog(v) || gl.getShaderInfoLog(f) || gl.getProgramInfoLog(p);
+    gl.deleteShader(v);
+    gl.deleteShader(f);
+    throw new Error(`program: ${log}`);
+  }
+  gl.deleteShader(v);
+  gl.deleteShader(f);
+  return p;
+}
+
 export function uniforms(gl: WebGL2RenderingContext, p: WebGLProgram) {
   const cache = new Map<string, WebGLUniformLocation | null>();
   return (name: string) => {

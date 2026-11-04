@@ -54,8 +54,8 @@ const LAYERS: PlatformLayer[] = [
   },
   {
     title: "NPR billing",
-    body: "Pay by the second, in rupees, by eSewa, Khalti, bank transfer or invoice. No dollar card, no exchange-rate surprises.",
-    tags: "per second · esewa · khalti · invoice",
+    body: "Pay by the second, in rupees, by digital payment, bank transfer or invoice. No dollar card, no exchange-rate surprises.",
+    tags: "per second · digital payment · invoice",
   },
   {
     title: "Local support",
@@ -72,17 +72,16 @@ export const PLATFORM = {
   },
   dive: {
     intro: {
-      kicker: "The platform under the GPU",
       title: "You rent the GPU.",
       lit: "We run the rest.",
-      body: "You bring the model and the data. We run the network, storage, power, security and billing underneath, in Kathmandu.",
+      body: "Like an iceberg, most of what makes AI work sits out of sight. The GPU is the tip you see; below the waterline is everything we run for you, in Kathmandu.",
       cue: "Scroll to dive",
     },
     gpu: {
       kicker: "What you see",
       title: "The GPU.",
-      body: "An NVIDIA H200 NVL with 141 GB of memory, coming soon and billed by the second in rupees. It's the part everyone compares, and the smallest part of the job.",
-      tags: "nvidia h200 nvl · 141 gb hbm3e · coming soon",
+      body: "An NVIDIA H200 NVL with 141 GB of memory, billed by the second in rupees. It's the part everyone compares, and the smallest part of the job.",
+      tags: "nvidia h200 nvl · 141 gb hbm3e",
     },
     waterline: {
       kicker: "Below the waterline",
@@ -95,11 +94,35 @@ export const PLATFORM = {
       kicker: "The whole iceberg",
       title: "All of it,",
       lit: "run for you.",
-      body: "We start with NVIDIA H200 NVL and will scale out, adding more GPUs and new generations as demand grows. Enterprise early access is open.",
+      body: "We start with NVIDIA H200 NVL and will scale out, adding more GPUs and new generations as demand grows.",
       primary: { href: "/contact?intent=workloads", label: "Request access" },
       secondary: { href: "/pricing", label: "How billing works" },
     },
     gauge: { surface: "Surface", gpu: "The GPU", waterline: "Waterline", whole: "Whole iceberg" },
+  },
+  /** The allegory, spelled out for readers who skimmed the dive. */
+  allegory: {
+    kicker: "Why an iceberg",
+    title: "You only see the tip.",
+    continuation: "The rest keeps it afloat.",
+    lead: "About a tenth of an iceberg shows above the water. The other nine tenths, out of sight, is what holds it up. AI in the cloud works the same way.",
+    parts: [
+      {
+        label: "Above the waterline",
+        title: "The GPU",
+        body: "The powerful chip that does the AI work. It's what everyone compares and talks about, and what you rent from us.",
+      },
+      {
+        label: "Below the waterline",
+        title: "Everything that keeps it running",
+        body: "Networks, storage, power, cooling, security, monitoring, billing and people. Without them, a GPU is just an expensive chip in a box.",
+      },
+      {
+        label: "What it means for you",
+        title: "You only deal with the tip",
+        body: "We build and run everything under the surface, in Nepal. You bring your data and your idea, and use the GPU as a service.",
+      },
+    ],
   },
   tools: {
     kicker: "What you work in",

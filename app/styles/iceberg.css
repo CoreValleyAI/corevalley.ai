@@ -18,9 +18,14 @@
   user-select: none;
 }
 :root[data-theme="dark"] .ib {
-  --ib-glass: rgb(15 19 25 / 0.6);
+  --ib-glass: rgb(0 0 0 / 0.6);
   --ib-glass-line: rgb(255 255 255 / 0.1);
-  --ib-sky: linear-gradient(180deg, rgb(20 22 26), rgb(0 0 0));
+  /* OLED black, top to bottom. */
+  --ib-sky: #000;
+}
+/* No grey ring around the slab on black: it would read as a frame. */
+:root[data-theme="dark"] .ib-stage {
+  box-shadow: none;
 }
 
 /* The scene is a slab inset from the viewport edge, with large corners. */
@@ -196,11 +201,6 @@
   pointer-events: none;
   text-shadow: none;
 }
-.ib-status {
-  margin: 0 0 22px;
-  text-shadow: none;
-}
-
 /* ── Pins glued to points on the berg, and the caption's leader line ──── */
 .ib-pins {
   position: absolute;
@@ -427,9 +427,6 @@
   }
   .ib-cue {
     margin-top: 22px;
-  }
-  .ib-status {
-    margin-bottom: 14px;
   }
   .ib-pin span {
     font-size: 11px;

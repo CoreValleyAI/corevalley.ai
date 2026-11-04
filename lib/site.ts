@@ -71,10 +71,10 @@ export function siteHref(path: string): string {
 export const SITE_TITLE = "CoreValley — Nepal's GPU cloud, NVIDIA H200 in Kathmandu";
 
 /* The default description, also used by the manifest and the WebSite graph.
-   Every clause is a confirmed fact (see lib/availability.ts); keep it under
+   Every clause is a confirmed fact; keep it under
    ~160 characters so search results show it whole. */
 export const SITE_DESCRIPTION =
-  "NVIDIA H200 GPUs in a hydro-powered Kathmandu datacenter, coming soon for enterprise early access. Billed in NPR, <5 ms latency in Kathmandu, data kept in Nepal.";
+  "NVIDIA H200 NVL GPUs in a hydro-powered datacentre in the Kathmandu Valley. Billed per second in NPR, <5 ms latency in the valley, data kept in Nepal.";
 
 /* Only facts that are stated on the public site or verifiable. Nothing here
    is guessed; see SEO_roadmap.txt for the items awaiting confirmation. */

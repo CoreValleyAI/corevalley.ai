@@ -8,7 +8,6 @@ import { Faq } from "@/components/system/faq";
 import { Kicker } from "@/components/system/kicker";
 import { SectionHead } from "@/components/system/section";
 import { SpecList } from "@/components/system/spec-list";
-import { Status } from "@/components/system/status";
 import { HARDWARE } from "@/copy/en/hardware";
 import { fact, v } from "@/lib/facts";
 import { pageMetadata } from "@/lib/seo";
@@ -41,7 +40,6 @@ export default function HardwarePage() {
             <Kicker>{h.hero.kicker}</Kicker>
             <h1 className="type-display-2">{h.hero.title}</h1>
             <p className="type-lead measure text-ink-2">{h.hero.lead}</p>
-            <Status />
             <div className="mt-2 flex flex-wrap gap-3">
               <ButtonLink href="/contact?intent=workloads&product=reserved" size="lg" magnetic>
                 Request access
@@ -138,7 +136,7 @@ export default function HardwarePage() {
 
       <Cta
         title="Put an H200 NVL to work."
-        continuation="Early access is open."
+        continuation="Tell us what you want to run."
         action={{ href: "/contact?intent=workloads", label: "Request access" }}
         secondary={{ href: "/platform", label: "The software" }}
       />

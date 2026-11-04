@@ -6,15 +6,7 @@
  * and storage on one private network. Illustrations only: no counts.
  */
 import { cn } from "@/lib/cn";
-
-function Flow({ d, delay = 0 }: { d: string; delay?: number }) {
-  return (
-    <>
-      <path d={d} className="dp-link" />
-      <path d={d} className="dp-flow" style={{ "--d": `${delay}s` } as React.CSSProperties} />
-    </>
-  );
-}
+import { Flow } from "@/components/system/drawing";
 
 function Box({ x, y, w, h, name, sub }: { x: number; y: number; w: number; h: number; name: string; sub?: string }) {
   return (

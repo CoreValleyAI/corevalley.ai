@@ -14,29 +14,10 @@
  * only while the picture is on screen ([data-play]), on touch screens as
  * much as with a mouse, since it needs no pointer at all.
  */
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import type { Art } from "@/copy/en/use-cases";
 import { cn } from "@/lib/cn";
-
-/** Plays the picture's loop while it is on screen. */
-function usePlay() {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    if (document.documentElement.dataset.motion === "reduce") return;
-    const io = new IntersectionObserver(
-      ([e]) => {
-        if (e?.isIntersecting) el.dataset.play = "";
-        else delete el.dataset.play;
-      },
-      { threshold: 0.25 },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-  return ref;
-}
+import { usePlay } from "@/lib/motion/hooks";
 
 type Tone = "hydro" | "warn" | "ink" | "sky";
 
@@ -51,7 +32,8 @@ function Frame({
   children: React.ReactNode;
   className?: string;
 }) {
-  const ref = usePlay();
+  const ref = useRef<HTMLDivElement>(null);
+  usePlay(ref);
   return (
     <div ref={ref} aria-hidden="true" className={cn("vg", className)}>
       <p className="vg__label">{label}</p>

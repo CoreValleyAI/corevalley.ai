@@ -1,5 +1,4 @@
 import { ValleyPortrait } from "@/components/art/valley-portrait";
-import { NvidiaLogo } from "@/components/brand/partner-logos";
 import { LayerStack } from "@/components/infrastructure/layer-stack";
 import { DataPath } from "@/components/infrastructure/data-path";
 import { Page } from "@/components/motion/page";
@@ -10,7 +9,6 @@ import { Faq } from "@/components/system/faq";
 import { KeyFacts } from "@/components/system/key-facts";
 import { Kicker } from "@/components/system/kicker";
 import { SectionHead } from "@/components/system/section";
-import { Status } from "@/components/system/status";
 import { TextLink } from "@/components/system/text-link";
 import { INFRASTRUCTURE } from "@/copy/en/infrastructure";
 import { STACK, STACK_NOTE } from "@/copy/en/stack";
@@ -35,10 +33,6 @@ export default function InfrastructurePage() {
             <Kicker>{p.hero.kicker}</Kicker>
             <h1 className="type-display-1">{p.hero.title}</h1>
             <p className="type-lead measure text-ink-2">{p.hero.lead}</p>
-            <Status id="region" />
-            <div className="mt-4 flex items-center gap-6 text-ink-2">
-              <NvidiaLogo className="h-6" />
-            </div>
           </div>
           <figure className="flex flex-col gap-3" data-parallax="0.05">
             <ValleyPortrait className="aspect-[640/545] w-full rounded-panel border border-line" />
@@ -87,7 +81,7 @@ export default function InfrastructurePage() {
                 ),
                 caption: "round trip in the valley",
               },
-              { label: "Status", value: "Commissioning", caption: "enterprise early access" },
+              { label: "Billing", value: <F id="billing.unit" />, caption: "in Nepalese rupees" },
             ]}
           />
         </div>
@@ -192,27 +186,6 @@ export default function InfrastructurePage() {
               <NoteRef notes={notes} id="place.latency" />
             </p>
           </div>
-        </div>
-      </section>
-
-      {/* The facility */}
-      <section aria-labelledby="dc-title" className="section-y">
-        <div className="container-page">
-          <SectionHead id="dc-title" kicker={p.datacentre.kicker} title={p.datacentre.title} lead={p.datacentre.lead} />
-          <ul className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {p.datacentre.points.map((pt, i) => (
-              <li
-                key={pt.title}
-                className="flex flex-col gap-3 rounded-panel border border-line bg-bg-raised p-6"
-                data-reveal
-                style={{ "--i": i } as React.CSSProperties}
-              >
-                <span aria-hidden="true" className="size-2 rounded-full bg-hydro" />
-                <h3 className="type-title-3">{pt.title}</h3>
-                <p className="type-small text-ink-2">{pt.body}</p>
-              </li>
-            ))}
-          </ul>
         </div>
       </section>
 

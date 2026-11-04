@@ -1,22 +1,22 @@
+import { AssistantSection } from "@/components/home/assistant-section";
+import { BillingSection } from "@/components/home/billing-section";
 import { BuiltOn } from "@/components/home/built-on";
-import { GpuSection } from "@/components/home/gpu-section";
+import { GrowSection } from "@/components/home/grow-section";
 import { Hero } from "@/components/home/hero";
+import { HowSection } from "@/components/home/how-section";
 import { ProtectionMap } from "@/components/home/protection-map";
-import { Climb, ProductsSection } from "@/components/home/sections";
-import { SliceTeaser } from "@/components/home/slice-teaser";
-import { ToolsSection } from "@/components/home/tools-section";
-import { LayerStack } from "@/components/infrastructure/layer-stack";
+import { Climb } from "@/components/home/sections";
+import { UptimeSection } from "@/components/home/uptime-section";
+import { WhatSection } from "@/components/home/what-section";
+import { WordsSection } from "@/components/home/words-section";
 import { Page } from "@/components/motion/page";
-import { BillingBox } from "@/components/pricing/billing-box";
-import { createNotes, NoteList, NoteRef } from "@/components/system/fact";
-import { GlassLight } from "@/components/system/glass-light";
+import { createNotes, NoteList } from "@/components/system/fact";
 import { SectionHead } from "@/components/system/section";
 import { TextLink } from "@/components/system/text-link";
 import { UseCaseCarousel } from "@/components/use-cases/carousel";
 import { HOME } from "@/copy/en/home";
-import { STACK, STACK_NOTE } from "@/copy/en/stack";
 import { findUseCase, HOME_STORIES } from "@/copy/en/use-cases";
-import { v } from "@/lib/facts";
+import { fact, v } from "@/lib/facts";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
@@ -27,96 +27,35 @@ export const metadata = pageMetadata({
 });
 
 export default function HomePage() {
-  const notes = createNotes([
-    STACK_NOTE,
-    "place.uptime",
-    "gpu.fp8",
-    {
-      key: "readtime",
-      text: `${v("gpu.memory")} of memory read at ${v("gpu.bandwidth")} takes about 29 ms; a blink lasts roughly 100–400 ms.`,
-      source: { name: "NVIDIA H200 datasheet", url: "https://www.nvidia.com/en-us/data-center/h200/" },
-      asOf: "2026-10-13",
-    },
-    "gpu.migSize",
-    "place.latency",
-  ]);
-  const s = HOME.slice;
   const stories = HOME_STORIES.map((slug) => findUseCase(slug)!);
+  const billing = fact("billing.unit");
+  const notes = createNotes([
+    {
+      key: "minimum",
+      text: `Per-second billing has a minimum of ${v("billing.minimum")} per run. Rates are being finalised; every request gets a firm quote in rupees.`,
+      source: billing.source,
+      asOf: billing.asOf,
+    },
+    "place.uptime",
+    "place.uptimeMinutes",
+  ]);
 
   return (
     <Page>
       <Hero />
       <BuiltOn />
 
-      {/* Every layer, named. */}
-      <section id="stack" aria-labelledby="stack-title" className="section-y scroll-mt-[var(--header-h)]">
-        <div className="container-page flex flex-col gap-14">
-          <SectionHead
-            id="stack-title"
-            kicker={STACK.kicker}
-            title={STACK.title}
-            continuation={STACK.continuation}
-            lead={STACK.lead}
-          />
-          <LayerStack compact />
-          <p className="type-caption text-ink-3">
-            The five layers are NVIDIA&apos;s framing
-            <NoteRef notes={notes} id="cake" />. The facility&apos;s uptime is its own commitment for power, cooling and
-            the building
-            <NoteRef notes={notes} id="place.uptime" />.
-          </p>
-        </div>
-      </section>
+      {/* You bring the idea; we run everything else. */}
+      <WhatSection />
 
-      <GpuSection notes={notes} />
+      {/* Training, fine-tuning, inference, in plain words. */}
+      <WordsSection />
 
-      {/* One GPU, seven ways (S7 teaser) */}
-      <section aria-labelledby="slice-title" className="section-y">
-        <div className="container-page grid items-center gap-16 lg:grid-cols-2">
-          <div className="flex flex-col gap-8">
-            <SectionHead
-              id="slice-title"
-              kicker={s.kicker}
-              title={s.title}
-              continuation={s.continuation}
-              lead={s.lead}
-            />
-            <p className="type-body measure border-l-2 border-hydro pl-5 text-ink-2" data-reveal>
-              {s.readTime}
-              <NoteRef notes={notes} id="readtime" />
-            </p>
-            <div>
-              <TextLink href={s.link.href} arrow>
-                {s.link.label}
-              </TextLink>
-            </div>
-          </div>
-          <div data-parallax="0.05">
-            <SliceTeaser memory={v("gpu.memory")} slice={v("gpu.migSize")} />
-          </div>
-        </div>
-      </section>
-
-      {/* Use cases, in the owner's order. */}
-      <section aria-labelledby="cases-title" className="section-y relative isolate overflow-x-clip">
-        <GlassLight />
-        <div className="container-page mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <SectionHead
-            id="cases-title"
-            kicker={HOME.cases.kicker}
-            title={HOME.cases.title}
-            continuation={HOME.cases.continuation}
-            lead={HOME.cases.lead}
-          />
-          <TextLink href={HOME.cases.link.href} arrow className="shrink-0">
-            {HOME.cases.link.label}
-          </TextLink>
-        </div>
-        <UseCaseCarousel cases={stories} label="Use cases" />
-      </section>
+      {/* A private assistant answering from your own documents. */}
+      <AssistantSection />
 
       {/* Your data is safe with us: the protections, drawn and listed. */}
-      <section aria-labelledby="rim-title" className="section-y">
+      <section aria-labelledby="rim-title" className="section-y relative isolate">
         <div className="container-page">
           <ProtectionMap items={HOME.rim.items} link={HOME.rim.link}>
             <SectionHead
@@ -130,22 +69,35 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Billing at a glance. */}
-      <section aria-labelledby="billing-title" className="section-y relative isolate">
-        <GlassLight variant="b" />
-        <div className="container-page flex flex-col gap-12">
+      {/* Use cases, in the owner's order. */}
+      <section aria-labelledby="cases-title" className="section-y relative isolate overflow-x-clip">
+        <div className="container-page mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <SectionHead
-            id="billing-title"
-            kicker={HOME.billing.kicker}
-            title={HOME.billing.title}
-            continuation={HOME.billing.continuation}
+            id="cases-title"
+            kicker={HOME.cases.kicker}
+            title={HOME.cases.title}
+            continuation={HOME.cases.continuation}
+            lead={HOME.cases.lead}
           />
-          <BillingBox more />
+          <TextLink href={HOME.cases.link.href} arrow className="shrink-0">
+            {HOME.cases.link.label}
+          </TextLink>
         </div>
+        <UseCaseCarousel cases={stories} label="Use cases" pictures={false} glass="gl" />
       </section>
 
-      <ToolsSection />
-      <ProductsSection />
+      {/* Billing in three words. */}
+      <BillingSection notes={notes} />
+
+      {/* The facility's uptime commitment, as time. */}
+      <UptimeSection notes={notes} />
+
+      {/* From a first test to production, on the same account. */}
+      <GrowSection />
+
+      {/* From a brief to a running job. */}
+      <HowSection />
+
       <Climb />
       <NoteList notes={notes} />
     </Page>

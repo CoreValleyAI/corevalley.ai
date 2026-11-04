@@ -19,6 +19,7 @@
 import { useEffect, useRef, useState } from "react";
 import { TextLink } from "@/components/system/text-link";
 import { cn } from "@/lib/cn";
+import { Flow } from "@/components/system/drawing";
 
 export type ProtectionId = "isolated" | "access" | "training" | "abroad" | "incident";
 
@@ -38,15 +39,6 @@ const BLOCKED: { id: ProtectionId; name: string; verdict: string }[] = [
 ];
 
 type Part = (id: ProtectionId) => string;
-
-function Flow({ d, delay = 0 }: { d: string; delay?: number }) {
-  return (
-    <>
-      <path d={d} className="dp-link" />
-      <path d={d} className="dp-flow" style={{ "--d": `${delay}s` } as React.CSSProperties} />
-    </>
-  );
-}
 
 /** A box with a name and a small line under it, centred on cx. */
 function NamedBox({

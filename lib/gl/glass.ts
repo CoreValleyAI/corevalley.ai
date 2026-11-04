@@ -18,7 +18,7 @@
  * The DOM element stays the source of truth: it carries the text, and its
  * CSS glass shows until the first glass frame and again on context loss.
  */
-import { compileProgram, uniforms } from "./core";
+import { compileProgram, compileProgramAsync, uniforms } from "./core";
 
 export interface GlassRect {
   /** Centre and half-size, drawing-buffer px, DOM orientation (y down). */
@@ -50,9 +50,30 @@ export interface GlassLook {
       (fractions of width and height), the hydro share at the centre and
       the stop where it reaches the background. */
   sky: { cx: number; cy: number; rx: number; ry: number; mix: number; stop: number };
+  /** How frosted the glass is (0 clear … 1 fully frosted); default by theme. */
+  frost?: number;
+  /** How much of the scene's light the glass gathers; default by theme. */
+  gain?: number;
+  /** A light in the scene, drawing-buffer px: the rim and glint turn toward
+      it (weight 0–1) and brighten within `reach` px of it. Without it the
+      light comes from the top left, as over the valley. */
+  light?: { x: number; y: number; weight: number; reach: number };
+  /** The drop shadow's strength (0–1); default by theme. Given, it is drawn
+      out to where it ends instead of stopping at the pane's quad. */
+  shadow?: number;
+  /** Dither the glass: over a smooth scene (one soft light) its eight-bit
+      blur would band. */
+  dither?: boolean;
+  /** How far into the bezel (0–1 of it) the scrim reaches full strength;
+      default 1. Lower it where text sits close to the rim. */
+  scrimEdge?: number;
+  /** The contrast the scrim holds for the pane's text; default 4.5. Aim a
+      little higher where the dither and eight-bit rounding must not tip a
+      pixel under 4.5. */
+  minContrast?: number;
 }
 
-const FULLSCREEN_VS = /* glsl */ `#version 300 es
+export const FULLSCREEN_VS = /* glsl */ `#version 300 es
 out vec2 v_uv;
 void main() {
   vec2 p = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2));
@@ -117,6 +138,7 @@ uniform vec4 u_tint;          // rgb, strength
 uniform float u_textLum;
 uniform float u_minContrast;
 uniform vec2 u_light;
+uniform vec4 u_lightPos;      // a light in the scene: x, y (px), weight, reach (px); weight 0 = none
 uniform float u_specular;
 uniform float u_shadow;
 uniform float u_opacity;
@@ -126,9 +148,12 @@ uniform vec3 u_skyA;          // the sky at its centre
 uniform vec3 u_skyB;          // the background
 uniform vec4 u_sky;           // cx, cy, rx, ry (0-1 of the canvas)
 uniform float u_skyStop;
+uniform float u_dither;       // dither amplitude, in 8-bit steps; 0 = none
+uniform float u_scrimEdge;    // where in the bezel the scrim is at full strength
 out vec4 o;
 
 const vec3 LUMA = vec3(0.2126, 0.7152, 0.0722);
+float srgbEncode(float x) { return x <= 0.0031308 ? 12.92 * x : 1.055 * pow(x, 1.0 / 2.4) - 0.055; }
 
 float sdPanel(vec2 p, vec2 b, float r, out vec2 nrm) {
   vec2 s = vec2(p.x < 0.0 ? -1.0 : 1.0, p.y < 0.0 ? -1.0 : 1.0);
@@ -189,32 +214,49 @@ void main() {
   } else {
     col = backdrop(px);
   }
+  // Before the scrim, so the contrast it holds includes the dither.
+  if (u_dither > 0.0) col = max(col + (fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715)))) - 0.5) * (u_dither / 255.0), 0.0);
 
   // Tint, then a scrim that guarantees the text's contrast (in linear light).
   // A coloured pane is mixed as displayed (mixing a dark green with white
   // in linear light would wash it out); clear glass is mixed in linear light.
   vec3 tint = pow(u_tint.rgb, vec3(2.2));
   vec3 lin = u_tinted > 0.5 ? pow(mix(col, u_tint.rgb, u_tint.a), vec3(2.2)) : mix(pow(col, vec3(2.2)), tint, u_tint.a);
+  // Under the hand the pane brightens a little; before the scrim, so the
+  // text keeps its contrast while hovered.
+  if (u_lift > 0.0) lin = pow(mix(pow(lin, vec3(1.0 / 2.2)), vec3(1.0), 0.07 * u_lift), vec3(2.2));
   float Lb = dot(lin, LUMA), Lk = dot(tint, LUMA);
   bool lightText = u_textLum > Lk;
   float target = lightText ? (u_textLum + 0.05) / u_minContrast - 0.05 : u_minContrast * (u_textLum + 0.05) - 0.05;
+  // That target is true (sRGB) luminance; carry it into the 2.2 space the
+  // glass is mixed in, which reads the darks low (4.26:1 where 4.5 was meant).
+  target = pow(srgbEncode(clamp(target, 0.0, 1.0)), 2.2);
   bool fails = lightText ? (Lb > target) : (Lb < target);
   float den = Lb - Lk;
   // The text sits inside the flat top, never on the bezel: the rim keeps
   // its refracted light; the scrim holds the contrast where the words are.
-  if (fails && abs(den) > 1e-5) lin = mix(lin, tint, clamp((Lb - target) / den, 0.0, 1.0) * smoothstep(0.15, 1.0, x));
+  if (fails && abs(den) > 1e-5) lin = mix(lin, tint, clamp((Lb - target) / den, 0.0, 1.0) * smoothstep(0.15, u_scrimEdge, x));
   col = pow(lin, vec3(1.0 / 2.2));
 
   // The rim: a glint where the bezel faces the light, Fresnel, and a fine edge line.
+  // With a light in the scene, the rim faces it and brightens near it.
+  vec2 Ld = u_light;
+  float boost = 1.0;
+  if (u_lightPos.z > 0.0) {
+    vec2 toL = u_lightPos.xy - px;
+    float dl = length(toL);
+    vec2 m = mix(u_light, toL / max(dl, 1e-3), u_lightPos.z * smoothstep(0.0, 2.0 * u_bezel, dl));
+    Ld = dot(m, m) > 1e-6 ? normalize(m) : u_light;
+    boost = 1.0 + 0.6 * u_lightPos.z * exp(-dl * dl / max(u_lightPos.w * u_lightPos.w, 1.0));
+  }
   float slope = bezelSlope(x) * (u_thick / u_bezel);
   vec3 N = normalize(vec3(nSmooth * slope, 1.0));
-  vec3 H = normalize(normalize(vec3(u_light, 0.75)) + vec3(0.0, 0.0, 1.0));
+  vec3 H = normalize(normalize(vec3(Ld, 0.75)) + vec3(0.0, 0.0, 1.0));
   float glint = pow(max(dot(N, H), 0.0), 40.0) * (1.0 - x);
   float fresnel = pow(1.0 - N.z, 5.0);
-  float facing = dot(nSmooth, u_light);
+  float facing = dot(nSmooth, Ld);
   float rimLine = (1.0 - smoothstep(0.0, 1.5, inside)) * (0.25 + 0.75 * max(facing, 0.0) + 0.35 * max(-facing, 0.0));
-  col += (u_specular * (u_tinted > 0.5 ? 0.5 : 1.0) + 0.35 * u_lift) * (0.55 * glint + 0.3 * fresnel + 0.7 * rimLine);
-  col = mix(col, vec3(1.0), 0.07 * u_lift);
+  col += (u_specular * boost * (u_tinted > 0.5 ? 0.5 : 1.0) + 0.35 * u_lift) * (0.55 * glint + 0.3 * fresnel + 0.7 * rimLine);
 
   vec4 res = vec4(min(col, vec3(1.0)) * coverage, coverage + shadow * (1.0 - coverage));
   o = res * u_opacity;
@@ -227,10 +269,31 @@ interface Target {
   h: number;
 }
 
+export type GlassPass = ReturnType<typeof buildGlassPass>;
+
+/** The glass pass, compiled now (the valley's: it is built in one go). */
 export function createGlassPass(gl: WebGL2RenderingContext) {
-  const down = compileProgram(gl, FULLSCREEN_VS, DOWN_FS);
-  const up = compileProgram(gl, FULLSCREEN_VS, UP_FS);
-  const panel = compileProgram(gl, PANEL_VS, PANEL_FS);
+  return buildGlassPass(
+    gl,
+    compileProgram(gl, FULLSCREEN_VS, DOWN_FS),
+    compileProgram(gl, FULLSCREEN_VS, UP_FS),
+    compileProgram(gl, PANEL_VS, PANEL_FS),
+  );
+}
+
+/** The glass pass, compiled off the main thread where the browser can
+    (KHR_parallel_shader_compile): for stages that mount while the page
+    scrolls. */
+export async function createGlassPassAsync(gl: WebGL2RenderingContext) {
+  const [down, up, panel] = await Promise.all([
+    compileProgramAsync(gl, FULLSCREEN_VS, DOWN_FS),
+    compileProgramAsync(gl, FULLSCREEN_VS, UP_FS),
+    compileProgramAsync(gl, PANEL_VS, PANEL_FS),
+  ]);
+  return buildGlassPass(gl, down, up, panel);
+}
+
+function buildGlassPass(gl: WebGL2RenderingContext, down: WebGLProgram, up: WebGLProgram, panel: WebGLProgram) {
   const ud = uniforms(gl, down);
   const uu = uniforms(gl, up);
   const up_ = uniforms(gl, panel);
@@ -324,22 +387,27 @@ export function createGlassPass(gl: WebGL2RenderingContext) {
       gl.activeTexture(gl.TEXTURE0);
       // On Night Valley the scene is points of light on black: frosted, they
       // would vanish, so the glass is clearer and gathers their light.
-      gl.uniform1f(up_("u_frost"), look.dark ? 0.32 : 0.62);
-      gl.uniform1f(up_("u_gain"), look.dark ? 1.7 : 1);
+      gl.uniform1f(up_("u_frost"), look.frost ?? (look.dark ? 0.32 : 0.62));
+      gl.uniform1f(up_("u_gain"), look.gain ?? (look.dark ? 1.7 : 1));
       gl.uniform2f(up_("u_res"), width, height);
       // Lighter tints than the CSS glass: the scrim below holds the text's
       // contrast pixel by pixel, so the valley can show through.
       const clear = look.dark ? [15 / 255, 19 / 255, 25 / 255, 0.38] : [1, 1, 1, 0.44];
       const clearText = look.dark ? 0.9 : 0.012;
-      gl.uniform1f(up_("u_minContrast"), 4.5);
+      gl.uniform1f(up_("u_minContrast"), look.minContrast ?? 4.5);
       gl.uniform2f(up_("u_light"), -0.6, -0.8);
+      const L = look.light;
+      gl.uniform4f(up_("u_lightPos"), L?.x ?? 0, L?.y ?? 0, L ? L.weight : 0, L?.reach ?? 0);
       gl.uniform1f(up_("u_specular"), look.dark ? 0.5 : 0.6);
-      gl.uniform1f(up_("u_shadow"), look.dark ? 0.32 : 0.14);
+      gl.uniform1f(up_("u_shadow"), look.shadow ?? (look.dark ? 0.32 : 0.14));
       const skyA = look.bg.map((b, i) => b + (look.hydro[i]! - b) * look.sky.mix);
       gl.uniform3fv(up_("u_skyA"), skyA);
       gl.uniform3fv(up_("u_skyB"), look.bg);
       gl.uniform4f(up_("u_sky"), look.sky.cx, look.sky.cy, look.sky.rx, look.sky.ry);
       gl.uniform1f(up_("u_skyStop"), look.sky.stop);
+      // Through the tint, 1.5 steps here come out at about half a step.
+      gl.uniform1f(up_("u_dither"), look.dither ? 1.5 : 0);
+      gl.uniform1f(up_("u_scrimEdge"), look.scrimEdge ?? 1);
       // Device pixels per CSS pixel: the bezel and padding are set in CSS px.
       const k = width / Math.max(1, (gl.canvas as HTMLCanvasElement).clientWidth || width);
       for (const r of panels) {
@@ -356,7 +424,8 @@ export function createGlassPass(gl: WebGL2RenderingContext) {
         gl.uniform1f(up_("u_thick"), bezel * 1.9);
         gl.uniform1f(up_("u_ior"), 1.5);
         gl.uniform1f(up_("u_disp"), 0.03);
-        gl.uniform1f(up_("u_pad"), 28 * k);
+        // The shadow ends 2.05 bezels beyond the pane (offset plus falloff).
+        gl.uniform1f(up_("u_pad"), look.shadow === undefined ? 28 * k : Math.max(28 * k, bezel * 2.1 + 2));
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       }
       gl.bindVertexArray(null);

@@ -153,8 +153,10 @@
 :root[data-theme] :is(.lg, .lg-hydro)[data-glass="gl"],
 :root[data-theme] :is(.lg, .lg-hydro)[data-glass="gl"]:hover {
   background: transparent;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
+  /* !important: the DOM refraction (lib/glass/refract.ts) sets its filter
+     inline, and must not linger under the scene's glass. */
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
   box-shadow: none;
 }
 :root[data-theme] [data-glass="gl"] :is(.lg, .lg-hydro)::before,
@@ -312,6 +314,13 @@
 }
 :root[data-motion="reduce"] .glass-light__orb {
   animation: none;
+}
+/* Quiet: behind detailed drawings, two fainter fields and no third. */
+.glass-light.is-quiet {
+  opacity: 0.55;
+}
+.glass-light.is-quiet .glass-light__orb--3 {
+  display: none;
 }
 
 /* ── The navigation bar: a floating pill of liquid glass ─────────────────── */

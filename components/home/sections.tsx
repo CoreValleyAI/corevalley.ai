@@ -1,70 +1,19 @@
 /**
- * Home chapters: the products and the first step of the climb. Each is a
- * teaser that hands off to the page that owns the subject.
+ * The home page's closing chapter: the first step of the climb, one route
+ * per reason someone is here.
  */
-import { ViewTransition } from "react";
 import { AppLink } from "@/components/system/app-link";
 import { Arrow } from "@/components/system/button";
 import { DotGlyph, type GlyphName } from "@/components/system/dot-glyph";
-import { GlassLight } from "@/components/system/glass-light";
 import { SectionHead } from "@/components/system/section";
-import { TextLink } from "@/components/system/text-link";
 import { HOME } from "@/copy/en/home";
-import { PRODUCTS } from "@/copy/en/products";
 import { cn } from "@/lib/cn";
-
-export function ProductsSection() {
-  const p = HOME.products;
-  return (
-    <section aria-labelledby="products-title" className="section-y relative isolate">
-      <GlassLight variant="c" />
-      <div className="container-page">
-        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <SectionHead id="products-title" kicker={p.kicker} title={p.title} continuation={p.continuation} />
-          <TextLink href={p.link.href} arrow className="shrink-0">
-            {p.link.label}
-          </TextLink>
-        </div>
-      </div>
-
-      {/* A snap carousel on phones, a 3 × 2 grid from tablets up. */}
-      <ul className="container-page mt-12 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 [scrollbar-width:none] md:grid md:grid-cols-2 md:overflow-visible md:pb-0 lg:grid-cols-3 lg:gap-5 [&::-webkit-scrollbar]:hidden">
-        {PRODUCTS.map((product, i) => (
-          <li
-            key={product.slug}
-            className="w-[82%] shrink-0 snap-start md:w-auto"
-            data-reveal
-            style={{ "--i": i % 3 } as React.CSSProperties}
-          >
-            <AppLink
-              href={`/products/${product.slug}`}
-              data-refract
-              data-refract-bezel="18"
-              className="lg lg-card group flex h-full flex-col gap-10 rounded-panel p-6 md:p-7"
-            >
-              <ViewTransition name={`product-glyph-${product.slug}`} share="morph" default="none">
-                <DotGlyph name={product.glyph} className="size-11" />
-              </ViewTransition>
-              <span className="mt-auto flex flex-col gap-2">
-                <span className="type-title-3 flex items-center justify-between gap-3 text-ink">
-                  {product.name}
-                  <Arrow className="group-btn text-ink-3 transition-transform duration-[var(--dur-spring-snappy)] ease-spring group-hover:translate-x-1 group-hover:text-ink" />
-                </span>
-                <span className="type-small text-ink-2">{product.promise}</span>
-              </span>
-            </AppLink>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
 
 const ROUTES: { href: string; title: string; body: string; glyph: GlyphName; primary?: boolean }[] = [
   {
     href: "/contact?intent=workloads",
-    title: "Run AI workloads",
-    body: "GPUs, slices, storage or serving.",
+    title: "Use AI in your organisation",
+    body: "Ready-made AI, a workspace to build in, or engineers to help.",
     glyph: "hardware",
     primary: true,
   },

@@ -1,0 +1,255 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   The home page below the hero (components/home/*). One idea per section,
+   on panes of liquid glass (.lg, app/styles/glass.css); the only drawings
+   are the three small ones in "AI in plain words". Loops run only under
+   [data-play] (on screen) with full motion.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── AI in plain words (words-section.tsx) ───────────────────────────────── */
+.ai {
+  border-radius: 1rem;
+  border: 1px solid var(--line);
+  background: color-mix(in oklch, var(--bg-sunken) 70%, transparent);
+  padding: 0.5rem 0.75rem;
+}
+.ai-art {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.ai-label {
+  font-family: var(--font-mono);
+  font-size: 7.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  fill: var(--ink-3);
+}
+.ai-q {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  fill: var(--hydro);
+}
+.ai-dots {
+  fill: none;
+  stroke: var(--ink-3);
+}
+.ai-dots--tuned {
+  stroke: var(--hydro);
+}
+.ai-answer {
+  stroke: var(--hydro);
+  stroke-linecap: round;
+}
+.ai .dp-flow {
+  animation-play-state: paused;
+}
+.ai[data-play] .dp-flow {
+  animation-play-state: running;
+}
+/* Training: the blank model learns, dot by dot. */
+:root[data-motion="full"] .ai--train[data-play] .ai-dots {
+  animation: ai-learn 5.6s ease-in-out infinite;
+  animation-delay: calc(var(--k) * 0.14s);
+}
+/* Fine-tuning: a few dots of a ready model change. */
+:root[data-motion="full"] .ai--tune[data-play] .ai-dots--tuned {
+  animation: ai-tune 3.6s ease-in-out infinite;
+  animation-delay: calc(var(--k) * 0.12s);
+}
+/* Inference: the question is read column by column; the answer is written. */
+:root[data-motion="full"] .ai--run[data-play] .ai-dots {
+  animation: ai-read 2.4s ease-in-out infinite;
+  animation-delay: calc(var(--c) * 0.12s);
+}
+:root[data-motion="full"] .ai--run[data-play] .ai-answer {
+  stroke-dasharray: 60;
+  animation: ai-write 2.4s var(--ease-out) infinite;
+  animation-delay: calc(0.9s + var(--i) * 0.15s);
+}
+@keyframes ai-learn {
+  0%,
+  8% {
+    stroke: var(--dot-off);
+  }
+  40%,
+  86% {
+    stroke: var(--ink-3);
+  }
+  100% {
+    stroke: var(--dot-off);
+  }
+}
+@keyframes ai-tune {
+  0%,
+  15% {
+    stroke: var(--ink-3);
+  }
+  45%,
+  85% {
+    stroke: var(--hydro);
+  }
+  100% {
+    stroke: var(--ink-3);
+  }
+}
+@keyframes ai-read {
+  0%,
+  40%,
+  100% {
+    stroke: var(--ink-3);
+  }
+  18% {
+    stroke: var(--hydro);
+  }
+}
+@keyframes ai-write {
+  0% {
+    stroke-dashoffset: 60;
+  }
+  45%,
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ── Private AI (assistant-section.tsx) ───────────────────────────────────── */
+.pa-window {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.pa-bar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.5rem;
+  border-bottom: 1px solid color-mix(in oklch, var(--ink) 10%, transparent);
+}
+.pa-thread-wrap {
+  min-height: 17.5rem;
+  padding: 1.5rem;
+}
+/* The first question shows by default (and where :has is not supported). */
+.pa-thread {
+  display: none;
+  flex-direction: column;
+  gap: 1rem;
+}
+.pa-thread[data-a="q1"] {
+  display: flex;
+}
+.pa:has(#pa-q2:checked, #pa-q3:checked) .pa-thread[data-a="q1"] {
+  display: none;
+}
+.pa:has(#pa-q2:checked) .pa-thread[data-a="q2"],
+.pa:has(#pa-q3:checked) .pa-thread[data-a="q3"] {
+  display: flex;
+}
+.pa-you {
+  align-self: flex-end;
+  max-width: 85%;
+  padding: 0.7rem 1.05rem;
+  border-radius: 1.25rem 1.25rem 0.35rem 1.25rem;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 0.9375rem;
+  line-height: 1.45;
+}
+.pa-ai {
+  display: flex;
+  align-self: flex-start;
+  max-width: 94%;
+  flex-direction: column;
+  gap: 0.55rem;
+  color: var(--ink);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+.pa-ai [lang="ne"] {
+  font-size: 1rem;
+  line-height: 1.65;
+}
+.pa-source {
+  margin-top: 0.35rem;
+  font-size: 0.8125rem;
+  color: var(--ink-3);
+}
+.pa-suggest {
+  padding: 1.1rem 1.5rem 1.4rem;
+  border-top: 1px solid color-mix(in oklch, var(--ink) 10%, transparent);
+}
+.pa-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 1.05rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in oklch, var(--ink) 14%, transparent);
+  background: color-mix(in oklch, var(--ink) 4%, transparent);
+  color: var(--ink-2);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-short) var(--ease-out),
+    border-color var(--dur-short) var(--ease-out),
+    color var(--dur-short) var(--ease-out);
+}
+.pa-chip:hover {
+  background: color-mix(in oklch, var(--ink) 9%, transparent);
+  color: var(--ink);
+}
+.pa-chip:has(input:checked) {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--bg);
+}
+.pa-chip:has(input:focus-visible) {
+  outline: 2px solid var(--hydro);
+  outline-offset: 2px;
+}
+@media (min-width: 40rem) {
+  .pa-bar {
+    padding: 1.2rem 1.75rem;
+  }
+  .pa-thread-wrap {
+    min-height: 16rem;
+    padding: 1.75rem;
+  }
+  .pa-suggest {
+    padding: 1.2rem 1.75rem 1.5rem;
+  }
+}
+/* A picked question arrives, then its answer, line by line. */
+:root[data-motion="full"] .pa-thread .pa-you {
+  animation: pa-in 420ms var(--ease-out) both;
+}
+:root[data-motion="full"] .pa-thread .pa-ai > p {
+  animation: pa-in 520ms var(--ease-out) both;
+  animation-delay: calc(320ms + var(--i, 0) * 140ms);
+}
+@keyframes pa-in {
+  from {
+    opacity: 0;
+    translate: 0 0.5rem;
+  }
+}
+
+/* The still light behind CSS glass, where the scene does not run
+   (components/gl/section-light.tsx). */
+.section-light__still {
+  background: radial-gradient(42rem 30rem at 30% 45%, color-mix(in oklch, var(--hydro) 13%, transparent), transparent 70%);
+}
+:root[data-theme="light"] .section-light__still {
+  background: radial-gradient(42rem 30rem at 30% 45%, color-mix(in oklch, var(--hydro) 7%, transparent), transparent 70%);
+}
+/* Under a running scene, the scene's light takes over. */
+.section-light__still {
+  transition: opacity 600ms ease-out;
+}
+.section-light[data-gl="on"] .section-light__still {
+  opacity: 0;
+}

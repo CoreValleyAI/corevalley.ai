@@ -15,7 +15,7 @@ export const HARDWARE = {
   meta: {
     title: "Hardware — NVIDIA H200 NVL GPUs in Nepal",
     description:
-      "NVIDIA H200 NVL GPUs in the Kathmandu Valley: 141 GB of HBM3e at 4.8 TB/s on every GPU, split into up to seven isolated slices with MIG. Coming soon; early access open.",
+      "NVIDIA H200 NVL GPUs in the Kathmandu Valley: 141 GB of HBM3e at 4.8 TB/s on every GPU, split into up to seven isolated slices with MIG.",
   },
   hero: {
     kicker: "Hardware",
@@ -37,8 +37,8 @@ export const HARDWARE = {
     kicker: "What comes next",
     title: "Starting with H200.",
     continuation: "Built for what follows.",
-    now: { label: "Now", title: "NVIDIA H200 NVL", body: "Coming soon · enterprise early access" },
-    next: { label: "Next", title: "Sixteen GPUs", body: "More H200 NVL as early-access customers come on board." },
+    now: { label: "Now", title: "NVIDIA H200 NVL", body: "Our first GPUs, in the Kathmandu Valley" },
+    next: { label: "Next", title: "More H200 NVL", body: "More of the same GPU as customers come on board." },
     later: {
       label: "Later",
       title: "More GPUs",

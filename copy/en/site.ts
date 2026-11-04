@@ -29,7 +29,7 @@ const CATALOG_SHORT: Record<string, string> = {
   applications: "JupyterLab, Spark, Superset and more",
   modelops: "MLflow tracking and registry, Katib tuning",
   engineering: "Our engineers on your project",
-  "gpu-as-a-service": "Whole H200 NVL GPUs, on demand or reserved",
+  "gpu-as-a-service": "Rent whole GPUs, on demand or reserved",
   "mig-slices": `Up to ${v("gpu.migCount")} isolated GPUs from one`,
   "infrastructure-as-a-service": "Compute, network and storage, set up for you",
   "network-as-a-service": `Private networking, ${v("place.latency")} in the valley`,
@@ -50,7 +50,7 @@ export const NAV = {
       name: g.name,
       line: `${g.title} ${g.continuation}`,
       items: g.items.map((i) => ({
-        href: `/products#${i.id}`,
+        href: `/products/${i.page}`,
         label: i.name,
         glyph: i.glyph,
         description: CATALOG_SHORT[i.id] ?? i.line,
@@ -59,8 +59,8 @@ export const NAV = {
     all: { href: "/products", label: "All products" },
     featured: {
       href: "/hardware",
-      title: "Powered by NVIDIA",
-      body: `H200 NVL · ${v("gpu.memory")} ${v("gpu.memoryType")} on every GPU`,
+      title: "The GPUs we use",
+      body: "NVIDIA H200 NVL",
     },
     footer: [
       { href: "/products#compare", label: "Compare products" },
@@ -152,7 +152,7 @@ export const FOOTER = {
     { href: "/legal/data-residency", label: "Data residency" },
   ],
   copyright: `© ${new Date().getFullYear()} ${ORG.legalName}, Kathmandu`,
-  credits: "Partners are named for identification; NVIDIA marks belong to their owner.",
+  credits: "NVIDIA and the NVIDIA logo are trademarks of NVIDIA Corporation. Partners are named for identification only.",
 } as const;
 
 export const UI = {

@@ -13,6 +13,7 @@
  * of the reading position, so the row feels like one surface moving.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
+import { SectionLight } from "@/components/gl/section-light";
 import { AppLink } from "@/components/system/app-link";
 import { Arrow } from "@/components/system/button";
 import { PRODUCTS } from "@/copy/en/products";
@@ -29,10 +30,18 @@ export function UseCaseCarousel({
   label = "Use cases",
   size = "md",
   linkBase = "/use-cases",
+  pictures = true,
+  glass,
 }: {
   cases: UseCase[];
   label?: string;
   size?: "md" | "lg";
+  /** Each card's picture of the outcome; off on the home page, where the
+      cards are words on glass and the pictures wait on /use-cases. */
+  pictures?: boolean;
+  /** "gl": the cards are drawn as the hero's glass over a light that moves
+      with them (home); otherwise CSS glass. */
+  glass?: "gl";
   /** Where a card's link goes (its #slug is appended). */
   linkBase?: string;
 }) {
@@ -45,11 +54,11 @@ export function UseCaseCarousel({
   const reduced = useMotionPref() === "reduce";
   const resumeTimer = useRef(0);
 
-  const cards = () => Array.from(track.current?.children ?? []) as HTMLElement[];
+  const cards = () => Array.from(track.current?.querySelectorAll<HTMLElement>(":scope > .uc-card") ?? []);
 
   const go = useCallback((i: number) => {
     const t = track.current;
-    const list = Array.from(t?.children ?? []) as HTMLElement[];
+    const list = Array.from(t?.querySelectorAll<HTMLElement>(":scope > .uc-card") ?? []);
     const card = list[(i + list.length) % list.length];
     if (!t || !card) return;
     const pad = parseFloat(getComputedStyle(t).scrollPaddingLeft) || 0;
@@ -66,18 +75,22 @@ export function UseCaseCarousel({
     const measure = () => {
       raf = 0;
       const pad = parseFloat(getComputedStyle(t).scrollPaddingLeft) || 0;
-      const line = t.scrollLeft + pad;
+      const scroll = t.scrollLeft;
+      const view = t.clientWidth;
+      const line = scroll + pad;
+      // Every read before any write: one layout, not one per card.
+      const boxes = cards().map((c) => ({ c, x: c.offsetLeft, w: Math.max(1, c.offsetWidth) }));
       let best = 0;
       let bestD = Infinity;
-      cards().forEach((c, i) => {
-        const d = (c.offsetLeft - line) / Math.max(1, c.offsetWidth);
+      boxes.forEach(({ c, x, w }, i) => {
+        const d = (x - line) / w;
         // A card partly out of view eases back by how much of it is
         // hidden (never dimmed: its text keeps its contrast); cards wholly
         // in view stay as they are.
         if (!still) {
-          const left = c.offsetLeft - t.scrollLeft;
-          const shown = Math.min(left + c.offsetWidth, t.clientWidth) - Math.max(left, 0);
-          const hidden = 1 - Math.max(0, Math.min(1, shown / c.offsetWidth));
+          const left = x - scroll;
+          const shown = Math.min(left + w, view) - Math.max(left, 0);
+          const hidden = 1 - Math.max(0, Math.min(1, shown / w));
           c.style.setProperty("--s", (1 - hidden * 0.06).toFixed(4));
           c.style.transformOrigin = left < 0 ? "right center" : "left center";
         }
@@ -154,11 +167,18 @@ export function UseCaseCarousel({
     >
       <div
         ref={track}
-        className="uc-track flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 [scrollbar-width:none] md:gap-5 [&::-webkit-scrollbar]:hidden"
+        data-glass-host={glass === "gl" ? "" : undefined}
+        className={cn(
+          "uc-track flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 [scrollbar-width:none] md:gap-5 [&::-webkit-scrollbar]:hidden",
+          // Room inside the scroller for the panes' shadows and the light
+          // (it clips what overflows), given back in margin.
+          glass === "gl" && "relative isolate -mt-12 -mb-12 pt-12 pb-14",
+        )}
         onPointerDown={hold}
         onTouchStart={hold}
         onWheel={(e) => Math.abs(e.deltaX) > Math.abs(e.deltaY) && hold()}
       >
+        {glass === "gl" ? <SectionLight span="scroll" /> : null}
         {cases.map((u, i) => (
           <div
             key={u.slug}
@@ -170,16 +190,19 @@ export function UseCaseCarousel({
             <article
               data-refract
               data-refract-bezel="18"
+              data-glass-panel={glass === "gl" ? "" : undefined}
               className="lg lg-card group relative flex h-full flex-col overflow-hidden rounded-panel"
             >
-              <Vignette
-                art={u.art}
-                variant={variantFor(u.slug)}
-                className="aspect-[16/10] w-full border-b border-line"
-              />
-              <div className="flex flex-1 flex-col gap-3 p-6 md:p-7">
+              {pictures ? (
+                <Vignette
+                  art={u.art}
+                  variant={variantFor(u.slug)}
+                  className="aspect-[16/10] w-full border-b border-line"
+                />
+              ) : null}
+              <div className={cn("flex flex-1 flex-col gap-3 p-6 md:p-7", !pictures && "min-h-[17rem] gap-4 md:p-8")}>
                 <p className="type-kicker text-ink-3">{u.sector}</p>
-                <h3 className="type-title-3 text-balance">
+                <h3 className={cn("text-balance", pictures ? "type-title-3" : "type-title-2")}>
                   <AppLink
                     href={`${linkBase}#${u.slug}`}
                     className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
@@ -202,7 +225,7 @@ export function UseCaseCarousel({
         ))}
       </div>
 
-      <div className="container-page flex items-center gap-4">
+      <div className={cn("container-page flex items-center gap-4", glass === "gl" && "relative")}>
         <div className="flex items-center gap-2">
           <button
             type="button"

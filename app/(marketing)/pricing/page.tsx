@@ -7,7 +7,6 @@ import { Kicker } from "@/components/system/kicker";
 import { GlassLight } from "@/components/system/glass-light";
 import { SectionHead } from "@/components/system/section";
 import { SpecReadout } from "@/components/system/spec-readout";
-import { Status } from "@/components/system/status";
 import { PRICING } from "@/copy/en/pricing";
 import { pageMetadata } from "@/lib/seo";
 
@@ -27,7 +26,6 @@ export default function PricingPage() {
             <Kicker>{p.hero.kicker}</Kicker>
             <h1 className="type-display-2 max-w-[14ch]">{p.hero.title}</h1>
             <p className="type-lead measure text-ink-2">{p.hero.lead}</p>
-            <Status />
           </div>
         </div>
       </section>

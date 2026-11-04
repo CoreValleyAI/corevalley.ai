@@ -29,7 +29,7 @@ export const STORAGE = {
 /** The browser chrome colour per theme: --bg of each palette. */
 export const THEME_COLOR: Record<Theme, string> = {
   light: "#F8FAFD",
-  dark: "#0A0F14",
+  dark: "#000000",
 };
 
 /* Dependency-free ES5, wrapped in try/catch because storage throws in some
@@ -182,6 +182,8 @@ export interface GLPalette {
   ink: RGB;
   ink3: RGB;
   hydro: RGB;
+  /** Text on a hydro surface (the primary button). */
+  onHydro: RGB;
   dotOff: RGB;
   glow2: RGB;
   glow3: RGB;
@@ -201,6 +203,7 @@ export function readPalette(): GLPalette {
     ink: get("--ink", [0.9, 0.9, 0.9]),
     ink3: get("--ink-3", [0.3, 0.3, 0.3]),
     hydro: get("--hydro", [0.1, 0.8, 0.25]),
+    onHydro: get("--on-hydro", [0.97, 0.98, 0.97]),
     dotOff: get("--dot-off", [0.05, 0.06, 0.08]),
     glow2: get("--glow-2", [0.2, 0.7, 0.8]),
     glow3: get("--glow-3", [0.3, 0.2, 0.8]),
