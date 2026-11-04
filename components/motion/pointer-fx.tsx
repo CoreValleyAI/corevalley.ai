@@ -100,7 +100,8 @@ function start(): () => void {
       return;
     }
     const r = target.getBoundingClientRect();
-    const radius = parseFloat(getComputedStyle(target).borderTopLeftRadius) || 8;
+    // Never sharper than 8 px: the ring is a soft thing, even round a square.
+    const radius = Math.max(8, parseFloat(getComputedStyle(target).borderTopLeftRadius) || 0);
     // The rect includes the magnetic lean; take it out to get the resting box.
     const lean = target === magnet;
     base = {
