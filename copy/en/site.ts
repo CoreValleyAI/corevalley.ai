@@ -29,7 +29,7 @@ const CATALOG_SHORT: Record<string, string> = {
   applications: "JupyterLab, Spark, Superset and more",
   modelops: "MLflow tracking and registry, Katib tuning",
   engineering: "Our engineers on your project",
-  "gpu-as-a-service": "Whole H200 NVL GPUs, on demand or reserved",
+  "gpu-as-a-service": "Rent whole GPUs, on demand or reserved",
   "mig-slices": `Up to ${v("gpu.migCount")} isolated GPUs from one`,
   "infrastructure-as-a-service": "Compute, network and storage, set up for you",
   "network-as-a-service": `Private networking, ${v("place.latency")} in the valley`,
