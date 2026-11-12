@@ -62,9 +62,9 @@ export function BillingBox({ className, more = false }: { className?: string; mo
           <span className="font-semibold text-ink">Rates are {v("billing.rates").toLowerCase()}.</span> Every request
           gets a firm quote in rupees {v("contact.reply").toLowerCase()}.
         </p>
-        <div className="flex shrink-0 items-center gap-5">
+        <div className="flex shrink-0 flex-wrap items-center gap-x-5 gap-y-3">
           {more ? (
-            <TextLink href="/pricing" arrow>
+            <TextLink href="/pricing" arrow className="whitespace-nowrap">
               How billing works
             </TextLink>
           ) : null}
