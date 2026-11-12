@@ -39,12 +39,8 @@ npm-debug.log*
 #   reference/      (archived static site)
 
 # AI assistant / agent tooling: local only, never committed
-.claude/
 .agents/
-**/.claude/
 **/.agents/
-CLAUDE.md
-CLAUDE.local.md
 AGENTS.md
 skills-lock.json
 .cursor/

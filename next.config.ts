@@ -9,7 +9,7 @@ const docsBuild = process.env.NEXT_PUBLIC_BUILD_TARGET === "docs";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  // Next 16 writes AGENTS.md/CLAUDE.md into the project when `next dev`
+  // Next 16 writes agent instruction files into the project when `next dev`
   // detects a coding agent. Nothing of the kind belongs in this repo.
   agentRules: false,
   poweredByHeader: false,

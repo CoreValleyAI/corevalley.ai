@@ -5,7 +5,7 @@
 **Status:** ✅ **Implemented** in the repository (metadata, sitemap, robots,
 structured data, icons, status page, docs-host switch). ❌ The launch steps
 that need account access — domain cut-over, search consoles, DNS for the
-subdomains — are listed in `SEO_roadmap.txt` and `doc_cname_readme.txt`.
+subdomains — are listed in `notes/SEO_roadmap.txt` and `notes/doc_cname_readme.txt`.
 
 ---
 
