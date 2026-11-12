@@ -34,7 +34,17 @@
  * the dot field draws only its lights on top: the lit floor glowing green
  * (with a soft halo pass, u_halo), the rivers, and the hand's light.
  */
-import { clamp01, compileProgram, lerp, loadDataTexture, lookAt, multiply, perspective, uniforms } from "@/lib/gl/core";
+import {
+  clamp01,
+  compileProgram,
+  lerp,
+  loadDataTexture,
+  lookAt,
+  multiply,
+  perspective,
+  smoothstep,
+  uniforms,
+} from "@/lib/gl/core";
 import { createGlassPass, measurePanels, type GlassRect, type GlassStyle } from "@/lib/gl/glass";
 import type { FrameInfo, Scene, SceneContext, SceneFactory } from "@/lib/gl/stage";
 import { createReliefPass } from "./valley-relief";
@@ -70,6 +80,7 @@ uniform vec2 u_city[3];      // Kathmandu, Lalitpur, Bhaktapur (uv)
 uniform vec3 u_tap[3];       // taps: ndc x, ndc y, age in s (< 0: none)
 uniform vec2 u_wind;         // shimmer from scroll speed: amount 0–1, phase
 uniform float u_halo;        // daylight's soft pass under the lit floor
+uniform vec4 u_edge;         // the grid's sides (uv x): fade in from, to; fade out to, from
 out vec3 v_color;
 out float v_alpha;
 
@@ -168,7 +179,7 @@ void main() {
   gl_PointSize = halo ? clamp(size * 5.0, 1.0, u_maxPx * 4.0) : clamp(size, 1.0, u_maxPx);
 
   // Fade the field's edges and the near distance.
-  float edge = smoothstep(0.0, 0.12, a_uv.x) * smoothstep(1.0, 0.88, a_uv.x)
+  float edge = smoothstep(u_edge.x, u_edge.y, a_uv.x) * smoothstep(u_edge.z, u_edge.w, a_uv.x)
              * smoothstep(0.0, 0.04, a_uv.y) * smoothstep(1.0, 0.9, a_uv.y);
   float near = smoothstep(0.6, 1.6, depth);
 
@@ -243,15 +254,61 @@ interface Meta {
 }
 
 type V3 = [number, number, number];
+interface CamKey {
+  eye: V3;
+  target: V3;
+  fov: number;
+}
 
-/** Camera keys at scroll progress 0 and 1. World units are 10 km. */
-const CAM: { from: { eye: V3; target: V3; fov: number }; to: { eye: V3; target: V3; fov: number } } = {
-  from: { eye: [-0.45, 2.6, 7.2], target: [-0.35, 1.04, 2.41], fov: 30 },
-  to: { eye: [-0.62, 1.15, 4.4], target: [-0.6, 0.42, 1.4], fov: 40 },
+/**
+ * Camera keys at scroll progress 0 and 1. World units are 10 km.
+ *
+ * Two shots of the same view: `wide` for a screen wider than it is tall,
+ * `tall` for a phone held upright — lower and with a wider lens, so the
+ * whole valley floor fits the width and sits under the words rather than
+ * behind them. In between (a tablet upright) the two are blended by the
+ * canvas's aspect.
+ */
+const CAM: Record<"wide" | "tall", { from: CamKey; to: CamKey }> = {
+  wide: {
+    from: { eye: [-0.45, 2.6, 7.2], target: [-0.35, 1.04, 2.41], fov: 30 },
+    to: { eye: [-0.62, 1.15, 4.4], target: [-0.6, 0.42, 1.4], fov: 40 },
+  },
+  tall: {
+    from: { eye: [-0.45, 2.1, 7.4], target: [-0.4, 1.35, 2.4], fov: 50 },
+    to: { eye: [-0.62, 1.5, 5.5], target: [-0.6, 0.42, 1.4], fov: 58 },
+  },
 };
 
+/** 0 on a wide screen, 1 on a phone held upright. */
+const tallness = (aspect: number) => smoothstep(1, 0.6, aspect);
+
+/** Upright phones see a slice of the field's width, so the grid is laid
+    over that slice only (uv x): nearly every dot is on screen, and finer. */
+const TALL_SLICE: [number, number] = [0.12, 0.8];
+const FULL: [number, number] = [0, 1];
+const sliceFor = (aspect: number) => (aspect < 0.62 ? TALL_SLICE : FULL);
+
+/** The middle of the valley floor, world units. */
+const FLOOR: V3 = [-0.4, 0.31, 2.5];
+
+/** Tilt a shot so the valley floor sits at `at` down the frame (0 top, 1 bottom). */
+function aimed(key: CamKey, at: number): CamKey {
+  const run = Math.hypot(key.eye[0] - FLOOR[0], key.eye[2] - FLOOR[2]);
+  const toFloor = Math.atan2(key.eye[1] - FLOOR[1], run);
+  const below = Math.atan((2 * at - 1) * Math.tan((key.fov * Math.PI) / 360));
+  const y = key.eye[1] - Math.tan(toFloor - below) * (key.eye[2] - key.target[2]);
+  return { ...key, target: [key.target[0], y, key.target[2]] };
+}
+
+const mixKey = (a: CamKey, b: CamKey, t: number): CamKey => ({
+  eye: [lerp(a.eye[0], b.eye[0], t), lerp(a.eye[1], b.eye[1], t), lerp(a.eye[2], b.eye[2], t)],
+  target: [lerp(a.target[0], b.target[0], t), lerp(a.target[1], b.target[1], t), lerp(a.target[2], b.target[2], t)],
+  fov: lerp(a.fov, b.fov, t),
+});
+
 /** ?cam=ex,ey,ez,tx,ty,tz,fov overrides the opening shot (for art direction). */
-function camOverride(): typeof CAM.from | null {
+function camOverride(): CamKey | null {
   const q = new URLSearchParams(window.location.search).get("cam");
   if (!q) return null;
   const v = q.split(",").map(Number);
@@ -266,7 +323,6 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
     loadDataTexture(gl, asset("/gl/valley.png")),
   ]);
   const override = camOverride();
-  const from = override ?? CAM.from;
 
   const program = compileProgram(gl, VS, FS);
   const u = uniforms(gl, program);
@@ -276,14 +332,14 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
     const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453;
     return s - Math.floor(s);
   };
-  const field = (cols: number, rows: number, jitter: number) => {
+  const field = (cols: number, rows: number, jitter: number, [u0, u1]: [number, number]) => {
     const count = cols * rows;
     const data = new Float32Array(count * 3);
     let k = 0;
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
         // A touch of jitter breaks the moiré of a perfect grid in perspective.
-        data[k++] = (c + 0.5 + (hash(c, r) - 0.5) * jitter) / cols;
+        data[k++] = u0 + ((u1 - u0) * (c + 0.5 + (hash(c, r) - 0.5) * jitter)) / cols;
         data[k++] = (r + 0.5 + (hash(r, c) - 0.5) * jitter) / rows;
         data[k++] = hash(c * 3.1, r * 1.7);
       }
@@ -298,10 +354,19 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
     gl.enableVertexAttribArray(1);
     gl.vertexAttribPointer(1, 1, gl.FLOAT, false, 12, 8);
     gl.bindVertexArray(null);
-    return { vao, buf, count };
+    return { vao, buf, count, span: u1 - u0, slice: [u0, u1] as [number, number] };
   };
   const [cols, rows] = GRID[tier];
-  const dots = field(cols, rows, 0.5);
+  // Laid out on the first resize, and again if the screen is turned.
+  let dots: ReturnType<typeof field> | null = null;
+  const layDots = (slice: [number, number]) => {
+    if (dots && dots.slice[0] === slice[0] && dots.slice[1] === slice[1]) return;
+    if (dots) {
+      gl.deleteBuffer(dots.buf);
+      gl.deleteVertexArray(dots.vao);
+    }
+    dots = field(cols, rows, 0.5, slice);
+  };
   // Daylight's surface, built the first time the light theme is drawn.
   let relief: ReturnType<typeof createReliefPass> | null = null;
   // Its rivers, as a distance field (scripts/build-rivers.mjs), fetched with it.
@@ -329,8 +394,19 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
   // While a hand is about, the elements may move: measure them each frame.
   let trackUntil = 0;
   const lifts = glassEls.map(() => 0);
+  // Where the valley floor sits on an upright screen, as a share of its
+  // height: in the room the page leaves under the buttons, over or behind
+  // the strip of facts at the foot (its glass shows the valley through).
+  let floorAt = 0.74;
   const measureGlass = () => {
-    panels = glass ? measurePanels(ctx.canvas, glassEls) : [];
+    const rects = glassEls.length ? measurePanels(ctx.canvas, glassEls) : [];
+    panels = glass ? rects : [];
+    if (rects.length > 1 && height > 1) {
+      const strip = rects.reduce((a, b) => (b.cy > a.cy ? b : a));
+      const buttons = Math.max(...rects.filter((p) => p !== strip).map((p) => p.cy + p.hh));
+      const room = Math.max(buttons + 0.12 * height, (buttons + strip.cy - strip.hh) / 2);
+      floorAt = Math.min(0.86, Math.max(0.66, room / height));
+    }
     ctx.invalidate();
   };
   /** An element's opacity as painted: its own times its ancestors' (to the hero). */
@@ -362,11 +438,13 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
       height = h;
       dpr = d;
       gl.viewport(0, 0, w, h);
+      layDots(sliceFor(w / h));
       glass?.resize(w, h);
       measureGlass();
     },
 
     frame(f: FrameInfo) {
+      if (!dots) return true;
       const aspect = width / height;
       const reduced = f.reduced;
       if (startedAt < 0) startedAt = f.time;
@@ -398,19 +476,15 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
       const p = reduced ? 0 : f.progress;
       const e = p * p * (3 - 2 * p);
       camX = lerp(camX, f.pointer.presence * f.pointer.x, 0.06);
-      const portrait = aspect < 0.85;
-      const eye: V3 = [
-        lerp(from.eye[0], CAM.to.eye[0], e) + camX * 0.16,
-        lerp(from.eye[1], CAM.to.eye[1], e) + (portrait ? 0.35 : 0),
-        lerp(from.eye[2], CAM.to.eye[2], e) + (portrait ? 1.1 : 0),
-      ];
-      const target: V3 = [
-        lerp(from.target[0], CAM.to.target[0], e),
-        lerp(from.target[1], CAM.to.target[1], e),
-        lerp(from.target[2], CAM.to.target[2], e),
-      ];
-      const fovDeg = lerp(from.fov, CAM.to.fov, e) * (portrait ? 1.45 : 1);
-      const viewProj = multiply(perspective((fovDeg * Math.PI) / 180, aspect, 0.05, 40), lookAt(eye, target));
+      const tall = tallness(aspect);
+      const key = mixKey(
+        override ?? mixKey(CAM.wide.from, aimed(CAM.tall.from, floorAt), tall),
+        mixKey(CAM.wide.to, CAM.tall.to, tall),
+        e,
+      );
+      const eye: V3 = [key.eye[0] + camX * 0.16, key.eye[1], key.eye[2]];
+      const target = key.target;
+      const viewProj = multiply(perspective((key.fov * Math.PI) / 180, aspect, 0.05, 40), lookAt(eye, target));
 
       // Palette. Night Valley is light summed additively, so it works in
       // linear values: overlapping dots add up to the bright token colours.
@@ -461,8 +535,13 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
       gl.uniform1f(u("u_reach"), reach);
       gl.uniform3f(u("u_pointer"), f.pointer.x, f.pointer.y, f.pointer.presence);
       gl.uniform1f(u("u_aspect"), aspect);
-      const density = Math.sqrt((GRID[3][0] * GRID[3][1]) / dots.count);
-      const scale = Math.max(0.8, Math.min(1.3, width / dpr / 1440));
+      // Dot size follows how closely the dots are set (the grid over the
+      // slice it covers) and how large the valley is drawn: on an upright
+      // phone it is about half its size on a wide screen.
+      const perField = dots.count / dots.span;
+      const density = Math.sqrt((GRID[3][0] * GRID[3][1]) / perField);
+      const cssW = width / dpr;
+      const scale = lerp(Math.max(0.8, Math.min(1.3, cssW / 1440)), Math.max(0.5, Math.min(0.8, cssW / 650)), tall);
       gl.uniform1f(u("u_px"), 11 * dpr * density * scale);
       gl.uniform1f(u("u_maxPx"), 6.5 * dpr);
       gl.uniform3fv(u("u_cOff"), off);
@@ -471,7 +550,11 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
       gl.uniform3fv(u("u_cRiver"), river);
       gl.uniform3fv(u("u_cGlow"), glowGreen);
       gl.uniform3fv(u("u_eye"), eye);
-      gl.uniform1f(u("u_grid"), Math.sqrt(dots.count));
+      gl.uniform1f(u("u_grid"), Math.sqrt(perField));
+      // The sides fade over an eighth of the field; a slice, over less.
+      const [u0, u1] = dots.slice;
+      const fade = dots.span < 1 ? 0.05 : 0.12;
+      gl.uniform4f(u("u_edge"), u0, u0 + fade, u1, u1 - fade);
       gl.uniform1f(u("u_dark"), dark ? 1 : 0);
       gl.uniform2fv(u("u_city[0]"), [...meta.places.Kathmandu, ...meta.places.Lalitpur, ...meta.places.Bhaktapur]);
       const taps = new Float32Array(9).fill(-1);
@@ -597,8 +680,10 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
       glassRO?.disconnect();
       glass?.dispose();
       for (const el of glassEls) delete el.dataset.glass;
-      gl.deleteBuffer(dots.buf);
-      gl.deleteVertexArray(dots.vao);
+      if (dots) {
+        gl.deleteBuffer(dots.buf);
+        gl.deleteVertexArray(dots.vao);
+      }
       gl.deleteTexture(tex.texture);
       gl.deleteProgram(program);
     },

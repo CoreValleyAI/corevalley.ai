@@ -15,12 +15,17 @@ export function Hero() {
     <section id="hero" aria-labelledby="hero-title" className="group/hero relative isolate overflow-clip">
       <HeroValley />
 
-      <div className="container-page relative flex min-h-[100svh] flex-col items-center justify-center pt-[calc(var(--header-h)+2rem)] pb-[clamp(9rem,22vh,14rem)] text-center">
+      {/* On a phone the words sit higher, and the valley has the screen below them. */}
+      <div className="container-page relative flex min-h-[100svh] flex-col items-center justify-center pt-[calc(var(--header-h)+2rem)] pb-[clamp(9rem,22vh,14rem)] text-center max-sm:justify-start max-sm:pt-[calc(var(--header-h)+clamp(2.5rem,9svh,5rem))]">
         <h1 id="hero-title" className="type-display-1 max-w-[13ch] md:max-w-none">
           <WordRise text={h.title.line1} delay={120} />
           <br className="hidden sm:block" /> <WordRise text={h.title.line2} start={3} delay={120} />{" "}
           <span className="rise__w rise__w--open">
-            <span className="rise__t online" style={{ "--i": 4, "--rise-delay": "120ms" } as React.CSSProperties}>
+            <span
+              className="rise__t online"
+              data-text={h.title.lit}
+              style={{ "--i": 4, "--rise-delay": "120ms" } as React.CSSProperties}
+            >
               {h.title.lit}
             </span>
           </span>

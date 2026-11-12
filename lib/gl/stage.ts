@@ -113,7 +113,11 @@ export function initialTier(): Tier {
   const mem = nav.deviceMemory ?? 8;
   const cores = nav.hardwareConcurrency ?? 8;
   if (nav.connection?.saveData) return 1;
-  if (mem <= 3 || cores <= 4) return 1;
+  // Few cores means a modest machine, except on phones that will not say
+  // how much memory they have: Safari reports 4 cores on every iPhone, and
+  // they are not modest. Those start at the phone tier like any other.
+  const unknownPhone = coarse && nav.deviceMemory === undefined;
+  if (mem <= 3 || (cores <= 4 && !unknownPhone)) return 1;
   if (coarse) return 2; // phones are capped at Tier 2
   return 3;
 }

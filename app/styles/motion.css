@@ -73,7 +73,12 @@
 /* ── The online glow ──────────────────────────────────────────────────────
    A one-shot sweep of the Glow gradient through the letters, then a slow
    8 s breathe of the halo (below the 0.2 Hz vestibular band, far below any
-   flash threshold). Static and soft under reduced motion. */
+   flash threshold). Static and soft under reduced motion.
+
+   The breathe is a second, wider halo (::after, the word again with only
+   its shadow showing) fading in and out over the first. Only its opacity
+   moves, so the compositor runs it: a shadow that changed size would be
+   painted again on every frame for as long as the page is open. */
 .online {
   color: var(--hydro-ink);
   text-shadow: 0 0 0.45em color-mix(in oklch, var(--hydro) 38%, transparent);
@@ -95,9 +100,19 @@
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation:
-    cv-sweep 1600ms var(--ease-in-out) 700ms both,
-    cv-breathe 8s ease-in-out 2400ms infinite;
+  position: relative;
+  text-shadow: 0 0 0.45em color-mix(in oklch, var(--hydro) 38%, transparent);
+  animation: cv-sweep 1600ms var(--ease-in-out) 700ms both;
+}
+:root[data-js][data-motion="full"] .online::after {
+  /* The empty alternative text keeps the word from being read out twice. */
+  content: attr(data-text) / "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  text-shadow: 0 0 0.75em color-mix(in oklch, var(--hydro) 40%, transparent);
+  opacity: 0;
+  animation: cv-breathe 8s ease-in-out 2400ms infinite;
 }
 @keyframes cv-sweep {
   from {
@@ -108,12 +123,8 @@
   }
 }
 @keyframes cv-breathe {
-  0%,
-  100% {
-    text-shadow: 0 0 0.45em color-mix(in oklch, var(--hydro) 38%, transparent);
-  }
   50% {
-    text-shadow: 0 0 0.75em color-mix(in oklch, var(--hydro) 55%, transparent);
+    opacity: 1;
   }
 }
 
