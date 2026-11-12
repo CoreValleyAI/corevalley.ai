@@ -24,6 +24,14 @@
   transition-delay: calc(var(--i, 0) * 70ms + var(--reveal-delay, 0ms));
 }
 
+/* On paper nothing scrolls into view, so nothing waits to. */
+@media print {
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
 /* ── Word rise (the hero's headline) ───────────────────────────────────────
    Each word sits in its own clipped line box and rises into place. The words
    start 55 % visible, not hidden, so the headline is painted on the very

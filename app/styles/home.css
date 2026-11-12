@@ -1,115 +1,19 @@
 /* ══════════════════════════════════════════════════════════════════════════
-   The home page below the hero (components/home/*). One idea per section,
-   on panes of liquid glass (.lg, app/styles/glass.css); the only drawings
-   are the three small ones in "AI in plain words". Loops run only under
-   [data-play] (on screen) with full motion.
+   The home page below the hero (components/home/*): an executive overview,
+   set in the same language as the inner pages. Nearly all of it is utility
+   classes in the components; what is here could not be said that way.
    ══════════════════════════════════════════════════════════════════════════ */
 
-/* ── AI in plain words (words-section.tsx) ───────────────────────────────── */
-.ai {
-  border-radius: 1rem;
-  border: 1px solid var(--line);
-  background: color-mix(in oklch, var(--bg-sunken) 70%, transparent);
-  padding: 0.5rem 0.75rem;
+/* ── Why CoreValley (why-section.tsx): the column that is ours ───────────── */
+.why-here {
+  background: var(--hydro-wash);
 }
-.ai-art {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-.ai-label {
-  font-family: var(--font-mono);
-  font-size: 7.5px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  fill: var(--ink-3);
-}
-.ai-q {
-  font-family: var(--font-sans);
-  font-size: 15px;
-  font-weight: 600;
-  fill: var(--hydro);
-}
-.ai-dots {
-  fill: none;
-  stroke: var(--ink-3);
-}
-.ai-dots--tuned {
-  stroke: var(--hydro);
-}
-.ai-answer {
-  stroke: var(--hydro);
-  stroke-linecap: round;
-}
-.ai .dp-flow {
-  animation-play-state: paused;
-}
-.ai[data-play] .dp-flow {
-  animation-play-state: running;
-}
-/* Training: the blank model learns, dot by dot. */
-:root[data-motion="full"] .ai--train[data-play] .ai-dots {
-  animation: ai-learn 5.6s ease-in-out infinite;
-  animation-delay: calc(var(--k) * 0.14s);
-}
-/* Fine-tuning: a few dots of a ready model change. */
-:root[data-motion="full"] .ai--tune[data-play] .ai-dots--tuned {
-  animation: ai-tune 3.6s ease-in-out infinite;
-  animation-delay: calc(var(--k) * 0.12s);
-}
-/* Inference: the question is read column by column; the answer is written. */
-:root[data-motion="full"] .ai--run[data-play] .ai-dots {
-  animation: ai-read 2.4s ease-in-out infinite;
-  animation-delay: calc(var(--c) * 0.12s);
-}
-:root[data-motion="full"] .ai--run[data-play] .ai-answer {
-  stroke-dasharray: 60;
-  animation: ai-write 2.4s var(--ease-out) infinite;
-  animation-delay: calc(0.9s + var(--i) * 0.15s);
-}
-@keyframes ai-learn {
-  0%,
-  8% {
-    stroke: var(--dot-off);
+@media (min-width: 48rem) {
+  .why thead .why-here {
+    border-radius: var(--r-md) var(--r-md) 0 0;
   }
-  40%,
-  86% {
-    stroke: var(--ink-3);
-  }
-  100% {
-    stroke: var(--dot-off);
-  }
-}
-@keyframes ai-tune {
-  0%,
-  15% {
-    stroke: var(--ink-3);
-  }
-  45%,
-  85% {
-    stroke: var(--hydro);
-  }
-  100% {
-    stroke: var(--ink-3);
-  }
-}
-@keyframes ai-read {
-  0%,
-  40%,
-  100% {
-    stroke: var(--ink-3);
-  }
-  18% {
-    stroke: var(--hydro);
-  }
-}
-@keyframes ai-write {
-  0% {
-    stroke-dashoffset: 60;
-  }
-  45%,
-  100% {
-    stroke-dashoffset: 0;
+  .why tbody tr:last-child .why-here {
+    border-radius: 0 0 var(--r-md) var(--r-md);
   }
 }
 
@@ -236,20 +140,4 @@
     opacity: 0;
     translate: 0 0.5rem;
   }
-}
-
-/* The still light behind CSS glass, where the scene does not run
-   (components/gl/section-light.tsx). */
-.section-light__still {
-  background: radial-gradient(42rem 30rem at 30% 45%, color-mix(in oklch, var(--hydro) 13%, transparent), transparent 70%);
-}
-:root[data-theme="light"] .section-light__still {
-  background: radial-gradient(42rem 30rem at 30% 45%, color-mix(in oklch, var(--hydro) 7%, transparent), transparent 70%);
-}
-/* Under a running scene, the scene's light takes over. */
-.section-light__still {
-  transition: opacity 600ms ease-out;
-}
-.section-light[data-gl="on"] .section-light__still {
-  opacity: 0;
 }

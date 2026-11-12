@@ -21,7 +21,7 @@ const ROUTES: { href: string; title: string; body: string; glyph: GlyphName; pri
     href: "/contact?intent=partner",
     title: "Partner with us",
     body: "Resellers, integrators, universities.",
-    glyph: "company",
+    glyph: "partner",
   },
   { href: "/contact?intent=press", title: "Press", body: "Interviews and information.", glyph: "blog" },
   { href: "/jobs", title: "Careers", body: "Build Nepal's AI infrastructure.", glyph: "careers" },

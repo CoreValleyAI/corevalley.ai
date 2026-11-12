@@ -1,63 +1,70 @@
 /**
- * "You bring the idea. We run everything else." (home, What we do): one
- * statement and the four things we run, on a single pane of liquid glass,
- * sized to sit in one screen. The glyphs light on hover; nothing else moves.
+ * "AI infrastructure, run from Nepal." (home, What we do): the company in
+ * one sentence, then everything it provides on one panel — the catalogue's
+ * three groups (copy/en/products.ts) with the infrastructure first, each
+ * offering a link to its own page. Names only on a phone; a line each from
+ * the Products panel's wording on wider screens.
  */
-import { SectionLight } from "@/components/gl/section-light";
+import { AppLink } from "@/components/system/app-link";
+import { Arrow } from "@/components/system/button";
 import { DotGlyph } from "@/components/system/dot-glyph";
-import { Kicker } from "@/components/system/kicker";
+import { SectionHead } from "@/components/system/section";
 import { TextLink } from "@/components/system/text-link";
 import { HOME } from "@/copy/en/home";
+import { PRODUCT_CATALOG } from "@/copy/en/products";
+import { CATALOG_SHORT } from "@/copy/en/site";
 import { cn } from "@/lib/cn";
 
 export function WhatSection() {
   const w = HOME.what;
   return (
-    <section id="what" aria-labelledby="what-title" className="section-y relative isolate scroll-mt-[var(--header-h)]">
-      <SectionLight />
-      <div className="container-page flex flex-col items-center gap-12 text-center md:gap-16">
-        <header className="flex flex-col items-center gap-5">
-          <Kicker>{w.kicker}</Kicker>
-          <h2 id="what-title" className="type-title-1 max-w-[24ch] text-balance" data-reveal>
-            {w.title}
-            <br className="hidden md:block" /> <span className="text-ink-3">{w.continuation}</span>
-          </h2>
-          <p className="type-lead measure text-ink-2" data-reveal style={{ "--i": 1 } as React.CSSProperties}>
-            {w.lead}
-          </p>
-        </header>
+    <section id="what" aria-labelledby="what-title" className="section-y scroll-mt-[var(--header-h)]">
+      <div className="container-page flex flex-col gap-10 md:gap-14">
+        <SectionHead id="what-title" kicker={w.kicker} title={w.title} continuation={w.continuation} lead={w.lead} />
 
-        <ul
-          data-refract
-          data-refract-bezel="22"
-          data-glass-panel=""
-          className="lg grid w-full max-w-[68rem] grid-cols-1 rounded-panel text-left sm:grid-cols-2 lg:grid-cols-4"
-        >
-          {w.items.map((it, i) => (
-            <li
-              key={it.title}
-              className={cn(
-                "group flex flex-col gap-5 p-6 md:p-8",
-                i > 0 && "border-t border-ink/10",
-                i === 1 && "sm:border-t-0 sm:border-l",
-                i === 2 && "sm:border-l-0 lg:border-t-0 lg:border-l",
-                i === 3 && "sm:border-l lg:border-t-0",
-              )}
-              data-reveal
-              style={{ "--i": i } as React.CSSProperties}
-            >
-              <DotGlyph name={it.glyph} className="size-10" />
-              <span className="flex flex-col gap-1.5">
-                <h3 className="type-title-3 text-ink">{it.title}</h3>
-                <p className="type-small text-ink-2">{it.body}</p>
-              </span>
-            </li>
-          ))}
-        </ul>
-
-        <TextLink href={w.link.href} arrow>
-          {w.link.label}
-        </TextLink>
+        <div className="overflow-hidden rounded-panel border border-line bg-bg-raised/70" data-reveal>
+          <div className="grid lg:grid-cols-3">
+            {w.groups.map((g, gi) => {
+              const group = PRODUCT_CATALOG.find((c) => c.id === g.id)!;
+              return (
+                <div
+                  key={g.id}
+                  className={cn("flex flex-col p-6 md:p-8", gi > 0 && "border-t border-line lg:border-t-0 lg:border-l")}
+                >
+                  <p className="type-kicker text-hydro-ink light:text-hydro">{group.name}</p>
+                  <h3 className="type-title-3 mt-3 text-ink">{g.title}</h3>
+                  <p className="type-small mt-2 text-ink-2 lg:min-h-[2lh]">{g.line}</p>
+                  <ul className="mt-6">
+                    {group.items.map((it) => (
+                      <li key={it.id} className="border-t border-line">
+                        <AppLink
+                          href={`/products/${it.page}`}
+                          className="group -mx-3 flex items-center gap-3.5 rounded-chip px-3 py-3 transition-colors duration-[var(--dur-short)] hover:bg-ink/[0.04]"
+                        >
+                          <DotGlyph name={it.glyph} className="size-6" />
+                          <span className="flex min-w-0 flex-1 flex-col">
+                            <span className="type-body font-medium text-ink">{it.name}</span>
+                            <span className="type-small hidden text-ink-2 sm:block">
+                              {w.short[it.id] ?? CATALOG_SHORT[it.id] ?? it.line}
+                            </span>
+                          </span>
+                          <Arrow className="text-ink-4 transition-[color,transform] duration-[var(--dur-spring-snappy)] ease-spring group-hover:translate-x-0.5 group-hover:text-ink" />
+                        </AppLink>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-line px-6 py-5 md:px-8">
+            {w.links.map((l) => (
+              <TextLink key={l.href} href={l.href} arrow className="type-small">
+                {l.label}
+              </TextLink>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );

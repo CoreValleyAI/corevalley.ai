@@ -1,22 +1,15 @@
-import { AssistantSection } from "@/components/home/assistant-section";
-import { BillingSection } from "@/components/home/billing-section";
+import { AccessSection } from "@/components/home/access-section";
 import { BuiltOn } from "@/components/home/built-on";
-import { GrowSection } from "@/components/home/grow-section";
+import { FaqSection } from "@/components/home/faq-section";
+import { GpuSection } from "@/components/home/gpu-section";
 import { Hero } from "@/components/home/hero";
-import { HowSection } from "@/components/home/how-section";
-import { ProtectionMap } from "@/components/home/protection-map";
+import { IndustriesSection } from "@/components/home/industries-section";
 import { Climb } from "@/components/home/sections";
-import { UptimeSection } from "@/components/home/uptime-section";
+import { TrustSection } from "@/components/home/trust-section";
 import { WhatSection } from "@/components/home/what-section";
-import { WordsSection } from "@/components/home/words-section";
+import { WhySection } from "@/components/home/why-section";
 import { Page } from "@/components/motion/page";
-import { createNotes, NoteList } from "@/components/system/fact";
-import { SectionHead } from "@/components/system/section";
-import { TextLink } from "@/components/system/text-link";
-import { UseCaseCarousel } from "@/components/use-cases/carousel";
 import { HOME } from "@/copy/en/home";
-import { findUseCase, HOME_STORIES } from "@/copy/en/use-cases";
-import { fact, v } from "@/lib/facts";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
@@ -26,80 +19,38 @@ export const metadata = pageMetadata({
   path: "/",
 });
 
+/**
+ * The home page: an executive overview. Each block answers one question a
+ * first visit brings and links to the page that owns the detail.
+ */
 export default function HomePage() {
-  const stories = HOME_STORIES.map((slug) => findUseCase(slug)!);
-  const billing = fact("billing.unit");
-  const notes = createNotes([
-    {
-      key: "minimum",
-      text: `Per-second billing has a minimum of ${v("billing.minimum")} per run. Rates are being finalised; every request gets a firm quote in rupees.`,
-      source: billing.source,
-      asOf: billing.asOf,
-    },
-    "place.uptime",
-    "place.uptimeMinutes",
-  ]);
-
   return (
     <Page>
       <Hero />
       <BuiltOn />
 
-      {/* You bring the idea; we run everything else. */}
+      {/* What we do: the company in a sentence, and everything it provides. */}
       <WhatSection />
 
-      {/* Training, fine-tuning, inference, in plain words. */}
-      <WordsSection />
+      {/* The GPU we run, how to use it and what comes next. */}
+      <GpuSection />
 
-      {/* A private assistant answering from your own documents. */}
-      <AssistantSection />
+      {/* Why here and not a cloud abroad. */}
+      <WhySection />
 
-      {/* Your data is safe with us: the protections, drawn and listed. */}
-      <section aria-labelledby="rim-title" className="section-y relative isolate">
-        <div className="container-page">
-          <ProtectionMap items={HOME.rim.items} link={HOME.rim.link}>
-            <SectionHead
-              id="rim-title"
-              kicker={HOME.rim.kicker}
-              title={HOME.rim.title}
-              continuation={HOME.rim.continuation}
-              lead={HOME.rim.lead}
-            />
-          </ProtectionMap>
-        </div>
-      </section>
+      {/* How data is protected: built for regulated sectors. */}
+      <TrustSection />
 
-      {/* Use cases, in the owner's order. */}
-      <section aria-labelledby="cases-title" className="section-y relative isolate overflow-x-clip">
-        <div className="container-page mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <SectionHead
-            id="cases-title"
-            kicker={HOME.cases.kicker}
-            title={HOME.cases.title}
-            continuation={HOME.cases.continuation}
-            lead={HOME.cases.lead}
-          />
-          <TextLink href={HOME.cases.link.href} arrow className="shrink-0">
-            {HOME.cases.link.label}
-          </TextLink>
-        </div>
-        <UseCaseCarousel cases={stories} label="Use cases" pictures={false} glass="gl" />
-      </section>
+      {/* Who it is for. */}
+      <IndustriesSection />
 
-      {/* Billing in three words. */}
-      <BillingSection notes={notes} />
+      {/* How to get access, and how billing works. */}
+      <AccessSection />
 
-      {/* The facility's uptime commitment, as time. */}
-      <UptimeSection notes={notes} />
-
-      {/* From a first test to production, on the same account. */}
-      <GrowSection />
-
-      {/* From a brief to a running job. */}
-      <HowSection />
+      {/* The questions a first visit leaves. */}
+      <FaqSection />
 
       <Climb />
-      <NoteList notes={notes} />
     </Page>
   );
 }

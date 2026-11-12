@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * The use-case carousel (home and /use-cases): one card per story, each
+ * The use-case carousel (/use-cases): one card per story, each
  * with its simple picture of the outcome. A native scroll-snap track, so a swipe
  * on a phone has the platform's own momentum; buttons, the progress marks
  * and the arrow keys move it too.
@@ -13,7 +13,6 @@
  * of the reading position, so the row feels like one surface moving.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { SectionLight } from "@/components/gl/section-light";
 import { AppLink } from "@/components/system/app-link";
 import { Arrow } from "@/components/system/button";
 import { PRODUCTS } from "@/copy/en/products";
@@ -30,18 +29,10 @@ export function UseCaseCarousel({
   label = "Use cases",
   size = "md",
   linkBase = "/use-cases",
-  pictures = true,
-  glass,
 }: {
   cases: UseCase[];
   label?: string;
   size?: "md" | "lg";
-  /** Each card's picture of the outcome; off on the home page, where the
-      cards are words on glass and the pictures wait on /use-cases. */
-  pictures?: boolean;
-  /** "gl": the cards are drawn as the hero's glass over a light that moves
-      with them (home); otherwise CSS glass. */
-  glass?: "gl";
   /** Where a card's link goes (its #slug is appended). */
   linkBase?: string;
 }) {
@@ -167,18 +158,11 @@ export function UseCaseCarousel({
     >
       <div
         ref={track}
-        data-glass-host={glass === "gl" ? "" : undefined}
-        className={cn(
-          "uc-track flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 [scrollbar-width:none] md:gap-5 [&::-webkit-scrollbar]:hidden",
-          // Room inside the scroller for the panes' shadows and the light
-          // (it clips what overflows), given back in margin.
-          glass === "gl" && "relative isolate -mt-12 -mb-12 pt-12 pb-14",
-        )}
+        className="uc-track flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 [scrollbar-width:none] md:gap-5 [&::-webkit-scrollbar]:hidden"
         onPointerDown={hold}
         onTouchStart={hold}
         onWheel={(e) => Math.abs(e.deltaX) > Math.abs(e.deltaY) && hold()}
       >
-        {glass === "gl" ? <SectionLight span="scroll" /> : null}
         {cases.map((u, i) => (
           <div
             key={u.slug}
@@ -190,19 +174,16 @@ export function UseCaseCarousel({
             <article
               data-refract
               data-refract-bezel="18"
-              data-glass-panel={glass === "gl" ? "" : undefined}
               className="lg lg-card group relative flex h-full flex-col overflow-hidden rounded-panel"
             >
-              {pictures ? (
-                <Vignette
-                  art={u.art}
-                  variant={variantFor(u.slug)}
-                  className="aspect-[16/10] w-full border-b border-line"
-                />
-              ) : null}
-              <div className={cn("flex flex-1 flex-col gap-3 p-6 md:p-7", !pictures && "min-h-[17rem] gap-4 md:p-8")}>
+              <Vignette
+                art={u.art}
+                variant={variantFor(u.slug)}
+                className="aspect-[16/10] w-full border-b border-line"
+              />
+              <div className="flex flex-1 flex-col gap-3 p-6 md:p-7">
                 <p className="type-kicker text-ink-3">{u.sector}</p>
-                <h3 className={cn("text-balance", pictures ? "type-title-3" : "type-title-2")}>
+                <h3 className="type-title-3 text-balance">
                   <AppLink
                     href={`${linkBase}#${u.slug}`}
                     className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
@@ -225,7 +206,7 @@ export function UseCaseCarousel({
         ))}
       </div>
 
-      <div className={cn("container-page flex items-center gap-4", glass === "gl" && "relative")}>
+      <div className="container-page flex items-center gap-4">
         <div className="flex items-center gap-2">
           <button
             type="button"

@@ -19,8 +19,8 @@ export interface NavLink {
   description?: string;
 }
 
-/** One line per offering, short enough for the Products panel. */
-const CATALOG_SHORT: Record<string, string> = {
+/** One line per offering, short enough for the Products panel (and the home page). */
+export const CATALOG_SHORT: Record<string, string> = {
   "serverless-apis": "Hosted open models, one API call away",
   "managed-inference": "Your models behind a dedicated endpoint",
   "fine-tuning": "Adapt open models to your own data",

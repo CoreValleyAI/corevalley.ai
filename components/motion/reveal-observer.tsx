@@ -18,16 +18,16 @@ export function RevealObserver() {
     const root = document.documentElement;
     if (root.dataset.motion === "reduce") return;
     const fold = window.innerHeight;
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (!e.isIntersecting) continue;
-          e.target.setAttribute("data-in", "");
-          io.unobserve(e.target);
-        }
-      },
-      { rootMargin: "0px 0px -6% 0px" },
-    );
+    // The whole viewport counts, with no margin held back at the bottom: an
+    // element in the last few per cent of a page that cannot scroll any
+    // further would otherwise wait there, hidden, for good.
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        e.target.setAttribute("data-in", "");
+        io.unobserve(e.target);
+      }
+    });
     // Elements armed by an earlier run (a re-render, or React's double
     // mount in development) are watched again; new ones are armed only if
     // they start below the fold. All reads first, then the writes.
