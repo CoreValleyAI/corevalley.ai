@@ -13,12 +13,7 @@ on:
       - "files/**"
       - ".github/workflows/verify.yml"
       - "README.md"
-      - "SEO_roadmap.txt"
-      - "doc_cname_readme.txt"
       - "status/**"
-      - "drafts/**"
-      - "Kathmandu_Core/**"
-      - "report_0903.txt"
   # Manual runs, and the CMS: after it commits published content to
   # CoreValleyAI/content it dispatches this workflow with content_only=true.
   workflow_dispatch:
@@ -64,7 +59,6 @@ jobs:
       fingerprint: ${{ steps.decide.outputs.fingerprint }}
       content_sha: ${{ steps.decide.outputs.content_sha }}
       revamp_sha: ${{ steps.decide.outputs.revamp_sha }}
-      silk_sha: ${{ steps.decide.outputs.silk_sha }}
       now: ${{ steps.decide.outputs.now }}
     steps:
       - name: Content access token
@@ -105,9 +99,7 @@ jobs:
           preview_sha="$(git ls-remote "https://github.com/$REPO" refs/heads/preview | cut -f1)"
           # The redesign in progress (empty when the branch does not exist).
           revamp_sha="$(git ls-remote "https://github.com/$REPO" refs/heads/revamp | cut -f1)"
-          # A design draft (empty when the branch does not exist).
-          silk_sha="$(git ls-remote "https://github.com/$REPO" refs/heads/preview-silk | cut -f1)"
-          fingerprint="$(printf '%s|%s|%s|%s|%s|%s' "$MAIN_SHA" "$preview_sha" "$revamp_sha" "$silk_sha" "$content_sha" "$visible" | sha256sum | cut -d' ' -f1)"
+          fingerprint="$(printf '%s|%s|%s|%s|%s' "$MAIN_SHA" "$preview_sha" "$revamp_sha" "$content_sha" "$visible" | sha256sum | cut -d' ' -f1)"
 
           build=true
           if [ "$EVENT" = "schedule" ]; then
@@ -120,7 +112,6 @@ jobs:
             echo "fingerprint=$fingerprint"
             echo "content_sha=$content_sha"
             echo "revamp_sha=$revamp_sha"
-            echo "silk_sha=$silk_sha"
             echo "now=$now"
           } >> "$GITHUB_OUTPUT"
 
@@ -141,9 +132,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: |
-            package-lock.json
-            Valleys_3D/package-lock.json
+          cache-dependency-path: package-lock.json
 
       # Reads the site's Pages settings and exposes the base path the site
       # will be served from: "/<repo>" for a project site (also when the
@@ -244,16 +233,6 @@ jobs:
         if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.content_only)
         run: npm run build:docs
 
-      # Valleys 3D is a separate Vite app, served unlisted at /valleys/. Its
-      # build uses a relative base, so it works under any site base path.
-      - name: Build Valleys 3D
-        working-directory: Valleys_3D
-        run: |
-          npm ci
-          npm run build
-          mkdir -p ../out/valleys
-          cp -r dist/. ../out/valleys/
-
       # The next version of the site, built from the `preview` branch and
       # served at /preview/ beside the live site, which stays at the root.
       # A push to `preview` shows up within about 15 minutes (the scheduled
@@ -312,34 +291,6 @@ jobs:
           mkdir -p ../out/revamp
           cp -r out/. ../out/revamp/
 
-      # A design draft, built from the `preview-silk` branch and served at
-      # /preview-silk/ (noindex). Like /revamp it never blocks a deploy.
-      - name: Checkout preview-silk branch
-        id: silk_checkout
-        if: needs.gate.outputs.silk_sha != ''
-        continue-on-error: true
-        uses: actions/checkout@v5
-        with:
-          ref: ${{ needs.gate.outputs.silk_sha }}
-          path: silk-src
-
-      - name: Build /preview-silk
-        if: steps.silk_checkout.outcome == 'success'
-        continue-on-error: true
-        working-directory: silk-src
-        env:
-          NEXT_PUBLIC_BASE_PATH: ${{ steps.basepath.outputs.value }}/preview-silk
-          NEXT_PUBLIC_SITE_URL: ${{ steps.basepath.outputs.site_url }}/preview-silk
-          NEXT_PUBLIC_NOINDEX: "1"
-          CONTENT_DIR: ${{ needs.gate.outputs.content_sha != '' && format('{0}/content-src', github.workspace) || '' }}
-          CONTENT_REQUIRED: ${{ needs.gate.outputs.content_sha != '' && '1' || '' }}
-          CONTENT_NOW: ${{ needs.gate.outputs.now }}
-        run: |
-          npm ci
-          npm run build
-          mkdir -p ../out/preview-silk
-          cp -r out/. ../out/preview-silk/
-
       # What this deploy contains. The next scheduled gate compares its
       # fingerprint with this file to decide whether to rebuild.
       - name: Write build record
@@ -351,11 +302,9 @@ jobs:
         run: |
           revamp=""
           if [ -f out/revamp/index.html ]; then revamp="$(git -C revamp-src rev-parse HEAD)"; fi
-          silk=""
-          if [ -f out/preview-silk/index.html ]; then silk="$(git -C silk-src rev-parse HEAD)"; fi
           jq -n --arg fp "$FINGERPRINT" --arg content "$CONTENT_SHA" --arg main "$GITHUB_SHA" \
-            --arg preview "$(git -C preview-src rev-parse HEAD)" --arg revamp "$revamp" --arg silk "$silk" --arg at "$NOW" --arg reason "$REASON" \
-            '{fingerprint: $fp, content: $content, main: $main, preview: $preview, revamp: $revamp, previewSilk: $silk, builtAt: $at, reason: $reason}' > out/_build.json
+            --arg preview "$(git -C preview-src rev-parse HEAD)" --arg revamp "$revamp" --arg at "$NOW" --arg reason "$REASON" \
+            '{fingerprint: $fp, content: $content, main: $main, preview: $preview, revamp: $revamp, builtAt: $at, reason: $reason}' > out/_build.json
           cat out/_build.json
 
       # Packaged here rather than with actions/upload-pages-artifact, whose v4

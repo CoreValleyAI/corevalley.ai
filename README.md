@@ -40,7 +40,7 @@ The public pages are production-quality. Three things are placeholders:
 | **Console data** — the portal runs on an in-memory mock | `lib/api/mock.ts` | Implement `lib/api/http.ts` against the control plane and build with `NEXT_PUBLIC_API_MODE=http`. |
 | **Sign-in** — the auth modal sets a cookie, nothing more | `components/layout/auth-modal.tsx` | Wire the Keycloak flow described in `docs/03-keycloak-identity.md`. |
 
-`SEO_roadmap.txt` lists the launch tasks that need account access (search
+`docs/notes/SEO_roadmap.txt` lists the launch tasks that need account access (search
 consoles, DNS, domain cut-over) and the copy claims to confirm.
 
 ---
@@ -75,37 +75,39 @@ build, or stop the dev server first.
 
 ```
 app/
-  (marketing)/        public pages: home, products, pricing, use cases, company, contact, legal
-  (portal)/           customer console (mock data, noindex)
+  (marketing)/        public pages: home, products, pricing, hardware, infrastructure,
+                      platform, use cases, company, contact, jobs, blog, legal
+  [...slug]/ · *.docs.tsx   the docs site (docs.corevalley.ai), built from corevalley-docs/
   layout.tsx          fonts, site-wide metadata, theme bootstrap, organisation JSON-LD
   sitemap.ts · robots.ts · manifest.ts   generated /sitemap.xml, /robots.txt, /manifest.webmanifest
-  opengraph-image.png · apple-icon.png · icon.svg   link-preview image and icons
-  globals.css         Tailwind ↔ design-system bridge
-  theme.css           light theme (token overrides) and terminal surfaces
-  glass.css           glass surfaces and motion helpers
-  prose.css           documentation typography
+  globals.css · prose.css · styles/       Tailwind ↔ design-system bridge, docs typography, page styles
 components/
-  ui/                 design-system primitives (Button, Card, Terminal, Icon…)
-  layout/             header, footer, console shell, logo, theme toggle
-  marketing/          hero graphics, pricing tables, quote console, page hero
+  system/ · ui/       design-system primitives (Button, Card, Icon, CTA, breadcrumbs…)
+  chrome/             site header, footer, theme toggle
+  brand/ · art/       logo, living mark, partner logos, valley/contour artwork
+  gl/ · motion/       WebGL stages and glass, scroll and pointer motion
+  home/ products/ pricing/ hardware/ infrastructure/ platform/ use-cases/ solutions/
+                      sections for the page of the same name
+  blog/ · jobs/ · content/   CMS-driven pages and the rich-text / live-preview renderer
   docs/               documentation shell, renderer, search
-  seo/                JSON-LD helpers
-  fx/                 reveal, scroll and canvas effects
+  forms/ · seo/       plan forms; JSON-LD helpers
 lib/
-  site.ts             canonical origin, organisation facts, URL helpers
-  seo.ts              per-page metadata helper
-  theme.ts            dark/light theme state and the canvas palette
-  products.ts         the four products (drives /products and nav)
-  catalog.ts          GPU SKUs (with availability status), slice profiles and placeholder rates
-  availability.ts     what is on offer today: early-access line, latency, power, reply time
-  docs/               reads corevalley-docs/ into pages, headings and search
-  api/                console data client (mock + HTTP stub)
+  site.ts · seo.ts · links.ts · facts.ts   canonical origin, metadata, URLs, organisation facts
+  theme.ts            dark/light theme state
+  content/            reads published content (CoreValleyAI/content) or content-fixtures/
+  docs/ · docs.ts     reads corevalley-docs/ into pages, headings and search
+  gl/ · glass/ · motion/ · art/   rendering, refraction, motion and artwork helpers
+copy/en/              page copy, one file per page
+content-fixtures/     sample CMS content used when the content repo is not available
 corevalley-docs/      documentation source: mkdocs.yml (nav) + docs/**/*.md
 status/               the standalone status page for status.corevalley.ai
 public/               brand SVGs, icons, security.txt, redirect stubs for the old site
 design_system/        read-only design tokens and reference components (do not import)
+reference/            archived old website and legacy docs (not built)
+files/                downloadable PDFs
 docs/                 engineering notes (architecture, identity, billing, deploy…)
-scripts/              generators (brand images, basemap), the docs site build
+  notes/              SEO roadmap, DNS steps, dated UX and status reports
+scripts/              content prep, generators (brand images, terrain, rivers), docs build, audits
 ```
 
 ---
@@ -192,7 +194,7 @@ project path and at the root domain. Verification tokens for Google and
 Bing are read from the repository variables `GSC_VERIFICATION` and
 `BING_VERIFICATION`.
 
-Manual launch tasks are in `SEO_roadmap.txt`.
+Manual launch tasks are in `docs/notes/SEO_roadmap.txt`.
 
 ---
 
@@ -267,8 +269,8 @@ reduce-motion; both themes on `/`, `/pricing/`, `/portal/` and the docs site.
 | `docs/06-design-system-and-frontend.md` | Tokens, cascade layers, components, theming |
 | `docs/07-build-deploy-and-environments.md` | Build targets, environment variables, CI |
 | `docs/11-seo-status-and-content.md` | How SEO, the status page and the docs host fit together |
-| `SEO_roadmap.txt` | Launch checklist for search, domains and claims to confirm |
-| `doc_cname_readme.txt` | Superseded MkDocs plan for docs.corevalley.ai (kept for the DNS steps) |
+| `docs/notes/SEO_roadmap.txt` | Launch checklist for search, domains and claims to confirm |
+| `docs/notes/doc_cname_readme.txt` | Superseded MkDocs plan for docs.corevalley.ai (kept for the DNS steps) |
 
 Brand assets in `public/brand/` and `design_system/` are proprietary to
 CoreValley AI Pvt. Ltd. Country outlines are Natural Earth (public domain),

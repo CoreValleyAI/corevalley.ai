@@ -259,7 +259,7 @@ polish.
      "monitoring not yet connected" rather than showing invented uptime.
      Search engines index it; it links back to the main site.
 9.2  Docs: the decided host is docs.corevalley.ai. Follow
-     doc_cname_readme.txt to publish it, then set the DOCS_URL repository
+     docs/notes/doc_cname_readme.txt to publish it, then set the DOCS_URL repository
      variable to https://docs.corevalley.ai: every docs link on the main
      site points there, the in-app /docs/ pages redirect (path preserved),
      declare the new host canonical, go noindex and leave the sitemap.

@@ -12,11 +12,6 @@ const eslintConfig = [
       // It ships plain .jsx with its own conventions we are not free to fix.
       "design_system/**",
       "reference/**",
-      // Standalone design drafts, not part of the site.
-      "drafts/**",
-      // Valleys_3D is its own Vite app with its own toolchain.
-      "Valleys_3D/**",
-      "Kathmandu_Core/**",
       // Optional standalone MkDocs build output: vendored, minified JS.
       "corevalley-docs/site/**",
       "next-env.d.ts",
