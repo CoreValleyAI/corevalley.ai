@@ -119,7 +119,7 @@ export function SiteHeader() {
             data-refract
             data-refract-bezel="16"
             className={cn(
-              "lg-nav relative mx-auto flex h-[var(--header-h)] max-w-[calc(var(--content-max)+1.75rem)] items-center gap-4 rounded-[1.25rem] pr-2 pl-3 sm:pl-4 xl:gap-6",
+              "lg-nav relative mx-auto flex h-[var(--header-h)] max-w-[calc(var(--content-max)+1.75rem)] items-center gap-4 rounded-[1.25rem] pr-2 pl-3 sm:pl-4 lg:gap-2 xl:gap-6",
               solid && "is-solid",
             )}
           >
@@ -221,7 +221,7 @@ function DesktopNav({
   };
 
   const item =
-    "type-small relative z-10 inline-flex h-9 shrink-0 items-center gap-1 rounded-pill px-3 whitespace-nowrap text-ink-2 2xl:px-3.5 transition-colors duration-[var(--dur-short)] hover:text-ink aria-[current=page]:text-ink aria-expanded:text-ink";
+    "type-small relative z-10 inline-flex h-9 shrink-0 items-center gap-1 rounded-pill px-2 whitespace-nowrap text-ink-2 xl:px-3 2xl:px-3.5 transition-colors duration-[var(--dur-short)] hover:text-ink aria-[current=page]:text-ink aria-expanded:text-ink";
 
   const trigger = (id: PanelId, label: string, paths: string[]) => (
     <button
@@ -264,7 +264,7 @@ function DesktopNav({
   );
 
   return (
-    <nav aria-label="Main" className="ml-4 hidden xl:block">
+    <nav aria-label="Main" className="hidden lg:block xl:ml-4">
       <div
         ref={navRef}
         className="relative flex items-center"
@@ -324,7 +324,7 @@ function Panel({
         if ((e.target as Element).closest("a")) onPick();
       }}
       className={cn(
-        "absolute inset-x-0 top-full hidden px-[max(0.5rem,calc(var(--page-x)-0.875rem))] pt-2 xl:block",
+        "absolute inset-x-0 top-full hidden px-[max(0.5rem,calc(var(--page-x)-0.875rem))] pt-2 lg:block",
         "origin-top transition-[clip-path,opacity] duration-[var(--dur-spring-smooth)] ease-spring",
         open ? "[clip-path:inset(0_0_0_0)] opacity-100" : "pointer-events-none [clip-path:inset(0_0_100%_0)] opacity-0",
       )}
@@ -511,7 +511,7 @@ function MobileMenu({ pathname }: { pathname: string }) {
         aria-label={UI.menu.open}
         aria-haspopup="dialog"
         aria-expanded={open}
-        className="grid size-10 place-items-center rounded-full text-ink transition-[background-color,transform] duration-[var(--dur-spring-snappy)] ease-spring hover:bg-bg-sunken active:scale-[0.94] xl:hidden"
+        className="grid size-10 place-items-center rounded-full text-ink transition-[background-color,transform] duration-[var(--dur-spring-snappy)] ease-spring hover:bg-bg-sunken active:scale-[0.94] lg:hidden"
       >
         <svg
           viewBox="0 0 20 20"
