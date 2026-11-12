@@ -25,8 +25,9 @@ Next.js 15 · React 19 · TypeScript · Tailwind CSS v4 · static export to GitH
 6. [SEO](#seo)
 7. [Deployment](#deployment)
 8. [Status page and docs host](#status-page-and-docs-host)
-9. [Verification](#verification)
-10. [Further reading](#further-reading)
+9. [Security](#security)
+10. [Verification](#verification)
+11. [Further reading](#further-reading)
 
 ---
 
@@ -244,6 +245,22 @@ NEXT_PUBLIC_BASE_PATH=/redesigned-portal npm run build && npm run build:docs
   docs here, in `corevalley-docs/`, never in that repository.
 
 ---
+
+## Security
+
+- **Content-Security-Policy.** Pages cannot send headers, so `scripts/csp.mjs` (run by
+  postbuild and by the docs build) puts a CSP `<meta>` tag in every HTML file. Inline scripts
+  are allowed only by the SHA-256 of their exact text, computed per page after the build. An
+  inline script must therefore be static text; a new third-party origin (an analytics host,
+  a form service) has to be added to `scripts/csp.mjs` or the browser blocks it.
+- **Content from the CMS is untrusted.** Links pass the `SAFE_URL` check, external apply
+  links must be `https://`, canonicals must point at this site or the docs host, and the
+  build fails on a slug that is not lowercase-and-dashes or on a content file that is a symlink.
+- **CI.** Actions are pinned to commit SHAs (Dependabot updates them), every job starts with
+  no permissions, checkouts do not keep the token, and `npm ci --ignore-scripts` runs no
+  package install scripts. Only `main` is published; staging branches are never built onto
+  corevalley.ai.
+- Report vulnerabilities as described in `SECURITY.md`.
 
 ## Verification
 

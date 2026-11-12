@@ -25,7 +25,7 @@ env:
   NEXT_PUBLIC_SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
   # The facts guard (lib/facts.ts) refuses numbers still marked to verify.
   # Strict on pull requests into main, where it decides what goes live;
-  # relaxed on branch pushes, which are staging work (like /revamp/).
+  # relaxed on branch pushes, which are staging work.
   NEXT_PUBLIC_FACTS_STRICT: ${{ github.event_name == 'pull_request' && '1' || '0' }}
 
 jobs:
@@ -33,16 +33,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 24
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
+
+      # Known vulnerabilities and tampered packages fail the run.
+      - name: Audit dependencies
+        run: |
+          npm audit --audit-level=moderate
+          npm audit signatures
+
+      # On pull requests: block any newly added dependency with a known
+      # vulnerability or a non-permissive licence.
+      - name: Dependency review
+        if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
+        with:
+          fail-on-severity: moderate
 
       - name: Typecheck
         run: npm run typecheck
@@ -70,7 +86,7 @@ jobs:
         run: npm run build:docs
 
       - name: Upload export for preview
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: static-export-${{ github.sha }}
           path: ./out

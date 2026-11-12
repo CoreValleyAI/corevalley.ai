@@ -14,9 +14,10 @@ export const metadata = {
 
 /* GitHub Pages serves this page as 404.html for every unknown path, so old
    addresses are forwarded from here before anything renders:
-   - /redesigned-portal/… (the site's preview period) → the same page at the root;
+   - /redesigned-portal/… (the site's preview period) → the same page at the root
+     (leading slashes are stripped, so //host can never become another site);
    - /docs/… (the docs before they moved) → the same page on the docs host. */
-const LEGACY_REDIRECT = `(function(){var p=location.pathname,q=location.search+location.hash,b="/redesigned-portal";if(p===b||p.indexOf(b+"/")===0){location.replace((p.slice(b.length)||"/")+q);return}if(p==="/docs"||p.indexOf("/docs/")===0)location.replace(${JSON.stringify(DOCS_URL)}+(p.slice(5)||"/")+q)})();`;
+const LEGACY_REDIRECT = `(function(){var p=location.pathname,q=location.search+location.hash,b="/redesigned-portal";if(p===b||p.indexOf(b+"/")===0){location.replace("/"+p.slice(b.length).replace(/^[\\\\/]+/,"")+q);return}if(p==="/docs"||p.indexOf("/docs/")===0)location.replace(${JSON.stringify(DOCS_URL)}+(p.slice(5)||"/")+q)})();`;
 
 const EXITS: { href: string; label: string; meta: string; glyph: GlyphName }[] = [
   { href: "/products", label: "Products", meta: "Six ways to run", glyph: "platform" },

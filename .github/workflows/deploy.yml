@@ -30,15 +30,13 @@ on:
   # Every 15 minutes, off the top of the hour (GitHub drops or delays runs
   # scheduled on the hour). The gate job below makes this cheap: it rebuilds
   # only when something visible would change — a scheduled post going live,
-  # a job reaching its closing time, or a push to `preview`.
+  # or a job reaching its closing time.
   schedule:
     - cron: "7,22,37,52 * * * *"
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+# Least privilege: nothing by default; each job asks for what it needs.
+# Only the deploy job, which runs no repository code, can publish.
+permissions: {}
 
 env:
   NEXT_TELEMETRY_DISABLED: "1"
@@ -54,27 +52,30 @@ jobs:
   # scheduled run that decides to skip never cancels a real deploy.
   gate:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       build: ${{ steps.decide.outputs.build }}
       fingerprint: ${{ steps.decide.outputs.fingerprint }}
       content_sha: ${{ steps.decide.outputs.content_sha }}
-      revamp_sha: ${{ steps.decide.outputs.revamp_sha }}
       now: ${{ steps.decide.outputs.now }}
     steps:
       - name: Content access token
         id: token
         if: vars.DEPLOYER_APP_ID != ''
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2.2.2
         with:
           app-id: ${{ vars.DEPLOYER_APP_ID }}
           private-key: ${{ secrets.DEPLOYER_APP_KEY }}
           owner: ${{ env.CONTENT_OWNER }}
           repositories: ${{ env.CONTENT_REPO }}
+          permission-contents: read
 
       - name: Checkout content
         if: steps.token.outcome == 'success'
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
+          persist-credentials: false
           repository: ${{ env.CONTENT_OWNER }}/${{ env.CONTENT_REPO }}
           token: ${{ steps.token.outputs.token }}
           path: content
@@ -85,7 +86,6 @@ jobs:
         env:
           EVENT: ${{ github.event_name }}
           SITE_URL: ${{ vars.SITE_URL || 'https://corevalley.ai' }}
-          REPO: ${{ github.repository }}
           MAIN_SHA: ${{ github.sha }}
         run: |
           now="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -96,22 +96,18 @@ jobs:
             # Items whose visibility depends on the clock: which are live now?
             visible="$(jq -r --arg now "$now" '.schedule[] | select((.from == null or .from <= $now) and (.until == null or .until > $now)) | .path' content/manifest.json | sort | tr '\n' ' ')"
           fi
-          preview_sha="$(git ls-remote "https://github.com/$REPO" refs/heads/preview | cut -f1)"
-          # The redesign in progress (empty when the branch does not exist).
-          revamp_sha="$(git ls-remote "https://github.com/$REPO" refs/heads/revamp | cut -f1)"
-          fingerprint="$(printf '%s|%s|%s|%s|%s' "$MAIN_SHA" "$preview_sha" "$revamp_sha" "$content_sha" "$visible" | sha256sum | cut -d' ' -f1)"
+          fingerprint="$(printf '%s|%s|%s' "$MAIN_SHA" "$content_sha" "$visible" | sha256sum | cut -d' ' -f1)"
 
           build=true
           if [ "$EVENT" = "schedule" ]; then
             deployed="$(curl -fsS "${SITE_URL%/}/_build.json?t=$(date +%s)" | jq -r '.fingerprint // empty' || true)"
             if [ "$deployed" = "$fingerprint" ]; then build=false; fi
           fi
-          echo "event=$EVENT build=$build content=${content_sha:-none} preview=$preview_sha revamp=${revamp_sha:-none}"
+          echo "event=$EVENT build=$build content=${content_sha:-none}"
           {
             echo "build=$build"
             echo "fingerprint=$fingerprint"
             echo "content_sha=$content_sha"
-            echo "revamp_sha=$revamp_sha"
             echo "now=$now"
           } >> "$GITHUB_OUTPUT"
 
@@ -119,16 +115,22 @@ jobs:
     needs: gate
     if: needs.gate.outputs.build == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # configure-pages reads the Pages settings to learn the base path.
+      pages: read
     # A newer build supersedes an older one that hasn't finished.
     concurrency:
       group: pages-build
       cancel-in-progress: true
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 24
           cache: npm
@@ -138,14 +140,11 @@ jobs:
       # will be served from: "/<repo>" for a project site (also when the
       # organisation site has a custom domain, e.g. corevalley.ai/<repo>/),
       # "" for a user site or a custom domain on this repository.
-      # `enablement` turns Pages on (source: GitHub Actions) the first time,
-      # so the repo needs no manual setup.
+      # Read-only: Pages is already enabled, and this job may not change settings.
       - name: Configure Pages
         id: pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
         continue-on-error: true
-        with:
-          enablement: true
 
       # Fall back to the repo name only when the settings could not be read.
       # An empty base path is a valid answer ("" = served from the domain
@@ -158,17 +157,15 @@ jobs:
           PAGES_OUTCOME: ${{ steps.pages.outcome }}
           PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
           PAGES_ORIGIN: ${{ steps.pages.outputs.origin }}
-          REPO_NAME: ${{ github.event.repository.name }}
-          REPO_OWNER: ${{ github.repository_owner }}
         run: |
-          if [ "$PAGES_OUTCOME" = "success" ]; then
-            base="$PAGES_BASE_PATH"
-            origin="$PAGES_ORIGIN"
-          else
-            echo "::warning::Could not read the Pages settings; assuming a project site at /$REPO_NAME"
-            base="/$REPO_NAME"
-            origin="https://$(echo "$REPO_OWNER" | tr '[:upper:]' '[:lower:]').github.io"
+          # Fail closed: guessing the base path would publish a site whose
+          # every link points at the wrong place.
+          if [ "$PAGES_OUTCOME" != "success" ]; then
+            echo "::error::Could not read the Pages settings; refusing to guess the base path"
+            exit 1
           fi
+          base="$PAGES_BASE_PATH"
+          origin="$PAGES_ORIGIN"
           # Canonical URLs, the sitemap and structured data all build on this:
           # the address the site is actually served from, base path included.
           # When Pages serves the site from https://corevalley.ai/ it becomes
@@ -183,24 +180,26 @@ jobs:
       - name: Content access token
         id: token
         if: needs.gate.outputs.content_sha != ''
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2.2.2
         with:
           app-id: ${{ vars.DEPLOYER_APP_ID }}
           private-key: ${{ secrets.DEPLOYER_APP_KEY }}
           owner: ${{ env.CONTENT_OWNER }}
           repositories: ${{ env.CONTENT_REPO }}
+          permission-contents: read
 
       - name: Checkout content
         if: needs.gate.outputs.content_sha != ''
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
+          persist-credentials: false
           repository: ${{ env.CONTENT_OWNER }}/${{ env.CONTENT_REPO }}
           ref: ${{ needs.gate.outputs.content_sha }}
           token: ${{ steps.token.outputs.token }}
           path: content-src
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Typecheck
         run: npm run typecheck
@@ -233,63 +232,10 @@ jobs:
         if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.content_only)
         run: npm run build:docs
 
-      # The next version of the site, built from the `preview` branch and
-      # served at /preview/ beside the live site, which stays at the root.
-      # A push to `preview` shows up within about 15 minutes (the scheduled
-      # gate notices the new commit), or straight away with a manual run.
-      - name: Checkout preview branch
-        uses: actions/checkout@v5
-        with:
-          ref: preview
-          path: preview-src
-
-      - name: Build /preview
-        working-directory: preview-src
-        env:
-          NEXT_PUBLIC_BASE_PATH: ${{ steps.basepath.outputs.value }}/preview
-          NEXT_PUBLIC_SITE_URL: ${{ steps.basepath.outputs.site_url }}/preview
-          # noindex on every page: /preview is a full second copy of the site
-          # and must not compete with it in search.
-          NEXT_PUBLIC_NOINDEX: "1"
-          CONTENT_DIR: ${{ needs.gate.outputs.content_sha != '' && format('{0}/content-src', github.workspace) || '' }}
-          CONTENT_REQUIRED: ${{ needs.gate.outputs.content_sha != '' && '1' || '' }}
-          CONTENT_NOW: ${{ needs.gate.outputs.now }}
-        run: |
-          npm ci
-          npm run build
-          mkdir -p ../out/preview
-          cp -r out/. ../out/preview/
-
-      # The full redesign in progress, built from the `revamp` branch at the
-      # commit the gate pinned and served at /revamp/ (noindex) for review.
-      # It never blocks a deploy: if the branch is missing or its build
-      # fails, the rest of the site ships and /revamp/ is left out.
-      - name: Checkout revamp branch
-        id: revamp_checkout
-        if: needs.gate.outputs.revamp_sha != ''
-        continue-on-error: true
-        uses: actions/checkout@v5
-        with:
-          ref: ${{ needs.gate.outputs.revamp_sha }}
-          path: revamp-src
-
-      - name: Build /revamp
-        if: steps.revamp_checkout.outcome == 'success'
-        continue-on-error: true
-        working-directory: revamp-src
-        env:
-          NEXT_PUBLIC_BASE_PATH: ${{ steps.basepath.outputs.value }}/revamp
-          NEXT_PUBLIC_SITE_URL: ${{ steps.basepath.outputs.site_url }}/revamp
-          # noindex on every page: a staging copy must not compete in search.
-          NEXT_PUBLIC_NOINDEX: "1"
-          CONTENT_DIR: ${{ needs.gate.outputs.content_sha != '' && format('{0}/content-src', github.workspace) || '' }}
-          CONTENT_REQUIRED: ${{ needs.gate.outputs.content_sha != '' && '1' || '' }}
-          CONTENT_NOW: ${{ needs.gate.outputs.now }}
-        run: |
-          npm ci
-          npm run build
-          mkdir -p ../out/revamp
-          cp -r out/. ../out/revamp/
+      # Only main is published on corevalley.ai. Staging builds (preview
+      # branches) must never run on this origin: they would share its storage
+      # and the CMS's trust. Review a branch from the Verify run's artifact,
+      # or publish it from a separate repository on its own subdomain.
 
       # What this deploy contains. The next scheduled gate compares its
       # fingerprint with this file to decide whether to rebuild.
@@ -300,11 +246,9 @@ jobs:
           NOW: ${{ needs.gate.outputs.now }}
           REASON: ${{ inputs.reason || github.event_name }}
         run: |
-          revamp=""
-          if [ -f out/revamp/index.html ]; then revamp="$(git -C revamp-src rev-parse HEAD)"; fi
           jq -n --arg fp "$FINGERPRINT" --arg content "$CONTENT_SHA" --arg main "$GITHUB_SHA" \
-            --arg preview "$(git -C preview-src rev-parse HEAD)" --arg revamp "$revamp" --arg at "$NOW" --arg reason "$REASON" \
-            '{fingerprint: $fp, content: $content, main: $main, preview: $preview, revamp: $revamp, builtAt: $at, reason: $reason}' > out/_build.json
+            --arg at "$NOW" --arg reason "$REASON" \
+            '{fingerprint: $fp, content: $content, main: $main, builtAt: $at, reason: $reason}' > out/_build.json
           cat out/_build.json
 
       # Packaged here rather than with actions/upload-pages-artifact, whose v4
@@ -314,7 +258,7 @@ jobs:
         run: tar --dereference --hard-dereference --directory out -cf "$RUNNER_TEMP/artifact.tar" --exclude=.git --exclude=.github .
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: github-pages
           path: ${{ runner.temp }}/artifact.tar
@@ -327,6 +271,9 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: [gate, build]
+    permissions:
+      pages: write
+      id-token: write
     # One deploy at a time, and never cancel one that has started.
     concurrency:
       group: pages-deploy
@@ -334,14 +281,13 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
 
       # Tell IndexNow engines (Bing, Yandex, Seznam, Naver…) every URL in the
       # sitemap may have changed. The key is public by design: it is the file
       # public/<key>.txt, which proves the site owns it. Google does not take
       # IndexNow; it reads the sitemap from Search Console. Content and
-      # scheduled runs skip it: CMS content is only on the noindexed /preview
-      # until the redesign is live (then ping the changed job and post URLs).
+      # scheduled runs skip it.
       - name: Notify search engines (IndexNow)
         if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.content_only)
         continue-on-error: true

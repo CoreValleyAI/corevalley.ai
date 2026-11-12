@@ -17,6 +17,7 @@
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { applyCsp } from "./csp.mjs";
 import YAML from "yaml";
 
 const DIST = ".next-docs";
@@ -98,5 +99,6 @@ fs.writeFileSync(
 fs.writeFileSync(path.join(OUT, "robots.txt"), `User-agent: *\nAllow: /\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);
 fs.writeFileSync(path.join(OUT, "CNAME"), `${new URL(SITE_URL).host}\n`);
 fs.writeFileSync(path.join(OUT, ".nojekyll"), "");
+console.log(`✔ Content-Security-Policy on ${applyCsp(OUT)} pages`);
 
 console.log(`✔ ${slugs.length} docs pages exported to out-docs/ for ${SITE_URL}`);

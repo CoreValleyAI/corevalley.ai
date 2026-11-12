@@ -12,7 +12,7 @@ import { key, type LayoutBlock, type MediaItem } from "@/lib/content/types";
 import { RichText } from "./rich-text";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-const SAFE_URL = /^(\/(?!\/)|https?:\/\/|mailto:)/i;
+const SAFE_URL = /^(\/(?![\/\\])|https?:\/\/|mailto:)/i;
 
 export function LayoutBlocks({ blocks, media }: { blocks: LayoutBlock[]; media: Map<string, MediaItem> }) {
   return (

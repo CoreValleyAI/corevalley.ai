@@ -4,7 +4,7 @@
 //   node scripts/serve-out.mjs [port]
 import http from "node:http";
 import { createReadStream, existsSync, statSync } from "node:fs";
-import { extname, join, normalize } from "node:path";
+import { extname, isAbsolute, join, normalize, relative } from "node:path";
 
 const port = Number(process.argv[2] ?? 4173);
 const base = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/\/$/, "");
@@ -28,10 +28,17 @@ const TYPES = {
 
 http
   .createServer((req, res) => {
-    let path = decodeURIComponent((req.url ?? "/").split("?")[0]);
+    let path;
+    try {
+      path = decodeURIComponent((req.url ?? "/").split("?")[0]);
+    } catch {
+      res.writeHead(400).end();
+      return;
+    }
     if (base && path.startsWith(base)) path = path.slice(base.length) || "/";
     let file = normalize(join(root, path));
-    if (!file.startsWith(root)) {
+    const rel = relative(root, file);
+    if (rel.startsWith("..") || isAbsolute(rel)) {
       res.writeHead(403).end();
       return;
     }

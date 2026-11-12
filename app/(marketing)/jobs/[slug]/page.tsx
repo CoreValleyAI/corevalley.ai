@@ -178,7 +178,7 @@ export default async function JobPage({ params }: Params) {
               </ButtonLink>
             </div>
           </div>
-        ) : job.applyMode === "external" && job.externalApplyUrl ? (
+        ) : job.applyMode === "external" && job.externalApplyUrl && /^https:\/\/[^/\\]/i.test(job.externalApplyUrl) ? (
           <ButtonLink href={job.externalApplyUrl} size="lg">
             Apply on our hiring partner’s site
           </ButtonLink>

@@ -42,7 +42,7 @@ export const formatDateTime = (iso: string) => `${DATE_TIME.format(new Date(iso)
 export const isClosed = (closesAt: string | null, now: string) => Boolean(closesAt && closesAt <= now);
 
 /** Published files live under /media/; the live preview passes absolute CMS URLs instead. */
-const fileUrl = (file: string) => (/^https?:\/\//.test(file) ? file : `${BASE}/media/${file}`);
+const fileUrl = (file: string) => (/^https:\/\//.test(file) ? file : `${BASE}/media/${file.replace(/^[/\\.]+/, "")}`);
 
 /** Public URL of a media size, with a graceful fall-back to the next size up or down. */
 export function mediaSrc(

@@ -185,6 +185,7 @@ export function Ascent() {
   const [reference, setReference] = useState("");
   const headingRef = useRef<HTMLHeadingElement>(null);
   const startedAt = useRef(0);
+  const honeyRef = useRef<HTMLInputElement>(null);
   const firstRender = useRef(true);
   const hydrated = useRef(false);
 
@@ -199,6 +200,11 @@ export function Ascent() {
     startedAt.current = now();
     const q = new URLSearchParams(window.location.search);
     if (q.get("sent") === "1") {
+      try {
+        sessionStorage.removeItem(DRAFT_KEY);
+      } catch {
+        /* no storage */
+      }
       setStatus("sent");
       return;
     }
@@ -310,8 +316,13 @@ export function Ascent() {
         return;
       }
     }
-    // Spam guard: a human takes more than a couple of seconds.
+    // Spam guards: a human takes more than a couple of seconds and never
+    // fills the hidden field. Bots get the thank-you screen and send nothing.
     if (since(startedAt.current) < 2500) return;
+    if (honeyRef.current?.value) {
+      setStatus("sent");
+      return;
+    }
     if (offline()) {
       setStatus("offline");
       return;
@@ -408,6 +419,7 @@ export function Ascent() {
         <div className="relative overflow-hidden rounded-panel border border-line bg-bg-raised p-6 md:p-10">
           {/* Honeypot: invisible to people, tempting to bots. */}
           <input
+            ref={honeyRef}
             type="text"
             name="_honey"
             tabIndex={-1}
@@ -722,7 +734,6 @@ function buildForm(d: Draft, reference: string): FormData {
   const route = CONTACT.routes.find((r) => r.id === d.route)?.title ?? "";
   f.set("_subject", `${route} — ${d.org || d.name} (${reference})`);
   f.set("_template", "table");
-  f.set("_captcha", "false");
   f.set("_next", `${window.location.origin}${BASE}/contact/?sent=1`);
   f.set("Reference", reference);
   f.set("Route", route);

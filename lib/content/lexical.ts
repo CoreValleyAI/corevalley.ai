@@ -85,7 +85,7 @@ export function readingMinutes(state: LexicalState | null | undefined): number {
 const esc = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
-const SAFE_URL = /^(\/(?!\/)|#|https?:\/\/|mailto:)/i;
+const SAFE_URL = /^(\/(?![\/\\])|#|https?:\/\/|mailto:)/i;
 
 /**
  * Lexical → a small, escaped HTML string, for JobPosting.description and the
@@ -114,7 +114,10 @@ export function toHtml(state: LexicalState | null | undefined, absolute: (path: 
       case "paragraph":
         return `<p>${kids()}</p>`;
       case "heading":
-        return `<${n.tag}>${kids()}</${n.tag}>`;
+      {
+        const tag = ["h2", "h3", "h4"].includes(String(n.tag)) ? n.tag : "h3";
+        return `<${tag}>${kids()}</${tag}>`;
+      }
       case "list":
         return n.listType === "number" ? `<ol>${kids()}</ol>` : `<ul>${kids()}</ul>`;
       case "listitem":
@@ -132,7 +135,10 @@ export function toHtml(state: LexicalState | null | undefined, absolute: (path: 
         const f = (n.fields ?? {}) as Record<string, string>;
         if (f.blockType === "code") return `<pre><code>${esc(f.code ?? "")}</code></pre>`;
         if (f.blockType === "callout") return `<p><strong>${esc(f.title ?? "Note")}:</strong> ${esc(f.body ?? "")}</p>`;
-        if (f.blockType === "cta") return `<p><a href="${esc(f.href?.startsWith("/") ? absolute(f.href) : f.href ?? "")}">${esc(f.label ?? "")}</a></p>`;
+        if (f.blockType === "cta") {
+          const href = SAFE_URL.test(f.href ?? "") ? f.href! : "/contact/";
+          return `<p><a href="${esc(href.startsWith("/") ? absolute(href) : href)}">${esc(f.label ?? "")}</a></p>`;
+        }
         return "";
       }
       default:
