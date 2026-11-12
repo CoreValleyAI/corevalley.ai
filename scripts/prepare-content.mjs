@@ -55,10 +55,31 @@ if (manifest.schemaVersion > SUPPORTED_SCHEMA) {
 const files = path.join(dir, "media", "files");
 let copied = 0;
 if (fs.existsSync(files)) {
+  // Only real files inside the content folder are published: a symlink (to
+  // /proc/self/environ, ~/.ssh/…) would otherwise be copied out as an image.
+  const base = fs.realpathSync(dir);
+  const realFiles = fs.realpathSync(files);
+  if (fs.lstatSync(path.join(dir, "media")).isSymbolicLink() || fs.lstatSync(files).isSymbolicLink() || !realFiles.startsWith(base + path.sep)) {
+    console.error("prepare-content: media/files must be a real folder inside the content checkout.");
+    process.exit(1);
+  }
   fs.mkdirSync(path.join(out, "files"), { recursive: true });
   for (const f of fs.readdirSync(files)) {
     if (!/^[A-Za-z0-9_-]+\.webp$/.test(f)) continue; // only what the CMS writes
-    fs.copyFileSync(path.join(files, f), path.join(out, "files", f));
+    const src = path.join(files, f);
+    if (!fs.lstatSync(src).isFile()) {
+      console.error(`prepare-content: skipping ${f}: not a regular file.`);
+      continue;
+    }
+    const head = Buffer.alloc(12);
+    const fd = fs.openSync(src, "r");
+    fs.readSync(fd, head, 0, 12, 0);
+    fs.closeSync(fd);
+    if (head.toString("latin1", 0, 4) !== "RIFF" || head.toString("latin1", 8, 12) !== "WEBP") {
+      console.error(`prepare-content: skipping ${f}: not a WebP image.`);
+      continue;
+    }
+    fs.copyFileSync(src, path.join(out, "files", f));
     copied++;
   }
 }

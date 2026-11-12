@@ -1,6 +1,10 @@
 # CoreValley AI — security contact (RFC 9116)
 # Report a vulnerability in corevalley.ai or the CoreValley platform here.
+# The GitHub link opens a private report only CoreValley can read.
+Contact: https://github.com/CoreValleyAI/corevalley.ai/security/advisories/new
 Contact: mailto:info@corevalley.ai
 Expires: 2027-09-30T00:00:00.000Z
 Preferred-Languages: en, ne
+Policy: https://github.com/CoreValleyAI/corevalley.ai/blob/main/SECURITY.md
 Canonical: https://corevalley.ai/.well-known/security.txt
+Canonical: https://docs.corevalley.ai/.well-known/security.txt

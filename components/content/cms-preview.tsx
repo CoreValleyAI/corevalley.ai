@@ -19,10 +19,15 @@ import { PostBody, PostHeader } from "@/components/blog/post-article";
 import { EMPLOYMENT_LABEL, WORK_MODE_LABEL, formatDate } from "@/lib/content/format";
 import { PreviewLookups, previewCareers, previewJob, previewPost } from "@/lib/content/from-payload";
 
-const ALLOWED = (process.env.NEXT_PUBLIC_CMS_ORIGINS || "http://localhost:3000,https://cms.corevalley.ai")
+const ALLOWED = (
+  process.env.NEXT_PUBLIC_CMS_ORIGINS ||
+  (process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://cms.corevalley.ai")
+)
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
+
+const COLLECTIONS = ["jobs", "posts", "careers-page"];
 
 type Doc = Record<string, unknown>;
 
@@ -46,7 +51,14 @@ export function CmsPreview() {
     setParams({ c: p.get("c") ?? "", id: p.get("id") ?? "", cms: p.get("cms") ?? "" });
   }, []);
 
-  const allowed = params ? ALLOWED.includes(params.cms) : false;
+  const allowed = Boolean(
+    params &&
+      ALLOWED.includes(params.cms) &&
+      COLLECTIONS.includes(params.c) &&
+      (params.id === "" || /^[A-Za-z0-9_-]{1,64}$/.test(params.id)) &&
+      // The CMS shows this page in its own frame; opened on its own it does nothing.
+      window.parent !== window,
+  );
 
   React.useEffect(() => {
     if (!params || !allowed) return;

@@ -7,9 +7,11 @@
  *  · Checks that every published job and live post has a page in out/, and
  *    that the feed and search index exist, so a content problem fails the
  *    deploy instead of shipping a broken careers page.
+ *  · Adds the Content-Security-Policy to every page (scripts/csp.mjs).
  */
 import fs from "node:fs";
 import path from "node:path";
+import { applyCsp } from "./csp.mjs";
 
 const root = process.cwd();
 const out = path.join(root, process.env.NEXT_DIST_DIR ? path.join(process.env.NEXT_DIST_DIR, "..", "out") : "out");
@@ -69,4 +71,5 @@ if (problems.length) {
   console.error(`postbuild-content: missing from the export:\n  ${problems.join("\n  ")}`);
   process.exit(1);
 }
-console.log(`postbuild-content: ok (${removed} placeholder${removed === 1 ? "" : "s"} removed)`);
+const pages = applyCsp(out);
+console.log(`postbuild-content: ok (${removed} placeholder${removed === 1 ? "" : "s"} removed, CSP on ${pages} pages)`);

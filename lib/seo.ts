@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { absoluteUrl, NOINDEX, SITE_NAME } from "./site";
+import { absoluteUrl, DOCS_URL, NOINDEX, SITE_NAME, SITE_URL } from "./site";
 
 /** The generated social card (app/opengraph-image.png, `npm run generate:brand`).
     Listed explicitly: a page-level openGraph block replaces the layout's, which
@@ -35,7 +35,18 @@ export function pageMetadata(opts: {
   /** Extra <link rel="alternate"> feeds, e.g. the blog's RSS. */
   feeds?: { url: string; title: string }[];
 }): Metadata {
-  const url = opts.canonical ?? absoluteUrl(opts.path);
+  // A canonical from content must point at this site or the docs host,
+  // never elsewhere (a hijacked canonical moves a page's ranking away).
+  const ownCanonical = (c?: string) => {
+    if (!c) return undefined;
+    try {
+      const origin = new URL(c).origin;
+      return [new URL(SITE_URL).origin, new URL(DOCS_URL).origin].includes(origin) ? c : undefined;
+    } catch {
+      return undefined;
+    }
+  };
+  const url = ownCanonical(opts.canonical) ?? absoluteUrl(opts.path);
   const ogTitle = opts.absoluteTitle ? opts.title : `${opts.title} · ${SITE_NAME}`;
   const image = opts.image ?? SOCIAL_IMAGE;
   return {

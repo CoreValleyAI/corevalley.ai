@@ -68,15 +68,38 @@ export function resolveContentDir(): { dir: string | null; fixtures: boolean } {
   return { dir: null, fixtures: false };
 }
 
+/** Content files are plain files inside the content folder: never a symlink
+    out of it (a link to /proc/self/environ would otherwise be read and published). */
+function insideContent(dir: string, full: string): boolean {
+  const st = fs.lstatSync(full);
+  if (st.isSymbolicLink()) throw new Error(`content: ${full} is a symlink; refusing to read it`);
+  const real = fs.realpathSync(full);
+  const base = fs.realpathSync(dir);
+  if (real !== base && !real.startsWith(base + path.sep)) throw new Error(`content: ${full} is outside ${dir}`);
+  return true;
+}
+
+const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+/** Slugs become paths, feed URLs and file names: anything else fails the build. */
+function checkSlugs(kind: string, list: unknown[]): void {
+  for (const x of list) {
+    const slug = (x as { slug?: unknown } | null)?.slug;
+    if (slug !== undefined && (typeof slug !== "string" || !SLUG.test(slug)))
+      throw new Error(`content: ${kind} slug ${JSON.stringify(slug)} is not lowercase-and-dashes`);
+  }
+}
+
 function readJson<T>(dir: string, file: string, fallback: T): T {
   const full = path.join(dir, file);
   if (!fs.existsSync(full)) return fallback;
+  insideContent(dir, full);
   return JSON.parse(fs.readFileSync(full, "utf8")) as T;
 }
 
 function readFolder<T>(dir: string, sub: string): T[] {
   const folder = path.join(dir, sub);
   if (!fs.existsSync(folder)) return [];
+  insideContent(dir, folder);
   return fs
     .readdirSync(folder)
     .filter((f) => f.endsWith(".json"))
@@ -134,6 +157,11 @@ export function loadContent(): ContentStore {
     categories: byId(readJson<Category[]>(dir, "categories.json", [])),
     tags: byId(readJson<Tag[]>(dir, "tags.json", [])),
   };
+  checkSlugs("job", cache.jobs);
+  checkSlugs("post", cache.posts);
+  checkSlugs("author", [...cache.authors.values()]);
+  checkSlugs("category", [...cache.categories.values()]);
+  checkSlugs("tag", [...cache.tags.values()]);
   return cache;
 }
 

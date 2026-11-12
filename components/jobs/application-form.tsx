@@ -158,7 +158,6 @@ export function ApplicationForm({
       <form onSubmit={onSubmit} encType="multipart/form-data" className="space-y-5">
         <input type="hidden" name="_subject" value={subject} />
         <input type="hidden" name="_template" value="table" />
-        <input type="hidden" name="_captcha" value="false" />
         {nextUrl ? <input type="hidden" name="_next" value={nextUrl} /> : null}
         <input type="hidden" name="role" value={role} />
         {team ? <input type="hidden" name="team" value={team} /> : null}

@@ -8,6 +8,7 @@ const eslintConfig = [
       ".next*/**",
       "node_modules/**",
       "out/**",
+      "out-docs/**",
       // The design system is a read-only upstream reference.
       // It ships plain .jsx with its own conventions we are not free to fix.
       "design_system/**",

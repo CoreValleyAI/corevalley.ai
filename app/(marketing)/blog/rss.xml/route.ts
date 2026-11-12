@@ -12,7 +12,7 @@ export function GET() {
   const posts = livePosts().slice(0, 30);
   const items = posts
     .map((p) => {
-      const url = absoluteUrl(`/blog/${p.slug}`);
+      const url = esc(absoluteUrl(`/blog/${p.slug}`));
       return [
         "<item>",
         `<title>${esc(p.title)}</title>`,

@@ -17,7 +17,7 @@ import { headingIds } from "@/lib/content/lexical";
 import { key, type LexicalNode, type LexicalState, type MediaItem } from "@/lib/content/types";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-const SAFE_URL = /^(\/(?!\/)|#|https?:\/\/|mailto:)/i;
+const SAFE_URL = /^(\/(?![\/\\])|#|https?:\/\/|mailto:)/i;
 
 export interface RichTextProps {
   state: LexicalState | null | undefined;
@@ -167,6 +167,7 @@ function ContentBlock({ fields }: { fields: Record<string, string> }) {
             loading="lazy"
             allow="accelerometer; encrypted-media; picture-in-picture; fullscreen"
             referrerPolicy="strict-origin-when-cross-origin"
+            sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
             className="size-full"
           />
         </div>
