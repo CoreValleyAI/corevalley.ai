@@ -41,6 +41,7 @@ const MAIN = [
   "/legal/privacy/",
   "/legal/terms/",
   "/legal/data-residency/",
+  "/card/abhigyan/",
   "/this-page-does-not-exist/",
 ];
 const firstIn = (dir) => {
