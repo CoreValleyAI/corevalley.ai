@@ -1,0 +1,968 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Digital business cards (app/card/*, components/card/business-card.tsx).
+
+   One object on a quiet stage, lit like a product shot. Night: smoked
+   glass under a single soft light. Glacier (light): pearl on pale grey.
+   The brand green is spent in three places only: the logo, the light the
+   card throws beneath it, and the edge of the Save button.
+
+   Every variable here is prefixed vc-: the site registers some short names
+   (--gx, --gy) with types of its own. Motion runs only with scripting and
+   full motion (html[data-js][data-motion="full"]), as on the rest of the
+   site.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+@property --vc-spin {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+/* ── Palette ─────────────────────────────────────────────────────────────── */
+
+.vc-page {
+  --vc-bg: #000000;
+  --vc-ink: #f5f5f7;
+  --vc-ink-2: rgb(245 245 247 / 0.62);
+  --vc-accent: oklch(0.86 0.17 152);
+  --vc-spot: rgb(255 255 255 / 0.085);
+  --vc-aura: oklch(0.5 0.09 165 / 0.26);
+  --vc-grain: 0.045;
+
+  --vc-card:
+    radial-gradient(130% 120% at 0% 0%, rgb(255 255 255 / 0.1), transparent 55%),
+    linear-gradient(155deg, rgb(42 45 50 / 0.8), rgb(21 22 25 / 0.88) 52%, rgb(12 13 15 / 0.94));
+  --vc-card-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.16), inset 0 0 0 0.5px rgb(255 255 255 / 0.1),
+    inset 0 -1px 0 rgb(0 0 0 / 0.5), 0 32px 64px -30px rgb(0 0 0 / 1);
+  --vc-rim: rgb(255 255 255 / 0.5);
+  --vc-glare: rgb(255 255 255 / 0.085);
+  --vc-shade: 0.55;
+  --vc-name: rgb(245 245 247 / 0.9);
+  --vc-shine: #ffffff;
+  --vc-engrave: rgb(0 0 0 / 0.55);
+  --vc-engrave-lip: rgb(255 255 255 / 0.13);
+  --vc-engrave-hi: rgb(255 255 255 / 0.16);
+  --vc-floor: oklch(0.72 0.14 160 / 0.3);
+
+  --vc-glass: rgb(255 255 255 / 0.07);
+  --vc-glass-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.14), inset 0 0 0 0.5px rgb(255 255 255 / 0.12),
+    0 18px 40px -22px rgb(0 0 0 / 0.9);
+  --vc-lens-bg: rgb(255 255 255 / 0.12);
+  --vc-lens-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25), inset 0 0 0 0.5px rgb(255 255 255 / 0.18);
+  --vc-tip-bg: rgb(44 46 50 / 0.92);
+  --vc-tip-ink: #f5f5f7;
+  --vc-tip-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 0.14), 0 8px 20px -8px rgb(0 0 0 / 0.8);
+
+  --vc-btn:
+    linear-gradient(180deg, rgb(255 255 255 / 0.09), rgb(255 255 255 / 0.02)),
+    rgb(17 19 21 / 0.9);
+  --vc-btn-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), inset 0 -1px 0 rgb(0 0 0 / 0.4);
+  --vc-btn-ink: #f5f5f7;
+  --vc-btn-sub: rgb(245 245 247 / 0.6);
+  --vc-btn-chip: rgb(255 255 255 / 0.07);
+  --vc-btn-chip-ring: rgb(255 255 255 / 0.1);
+  --vc-avatar: oklch(0.84 0.19 150 / 0.12);
+  --vc-avatar-ring: oklch(0.84 0.19 150 / 0.22);
+  --vc-halo: 0.42;
+
+  position: relative;
+  isolation: isolate;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-x: clip;
+  outline: none;
+  background: var(--vc-bg);
+  color: var(--vc-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+:root[data-theme="light"] .vc-page {
+  --vc-bg: #f2f3f5;
+  --vc-ink: #1d1d1f;
+  --vc-ink-2: rgb(29 29 31 / 0.62);
+  --vc-accent: oklch(0.5 0.13 152);
+  --vc-spot: rgb(255 255 255 / 0.95);
+  --vc-aura: oklch(0.9 0.06 165 / 0.55);
+  --vc-grain: 0.03;
+
+  --vc-card:
+    radial-gradient(130% 120% at 0% 0%, rgb(255 255 255 / 1), transparent 60%),
+    linear-gradient(155deg, rgb(255 255 255 / 0.96), rgb(249 250 251 / 0.9) 50%, rgb(238 240 243 / 0.94));
+  --vc-card-shadow:
+    inset 0 1px 0 #ffffff, inset 0 0 0 0.5px rgb(255 255 255 / 0.9), 0 0 0 0.5px rgb(16 24 40 / 0.1),
+    0 1px 2px rgb(16 24 40 / 0.06), 0 28px 56px -26px rgb(16 24 40 / 0.32);
+  --vc-rim: rgb(255 255 255 / 1);
+  --vc-glare: rgb(255 255 255 / 0.85);
+  --vc-shade: 0.22;
+  --vc-name: #1d1d1f;
+  --vc-shine: #474b53;
+  --vc-engrave: rgb(16 24 40 / 0.085);
+  --vc-engrave-lip: rgb(255 255 255 / 1);
+  --vc-engrave-hi: rgb(255 255 255 / 0.9);
+  --vc-floor: oklch(0.4 0.05 175 / 0.3);
+
+  --vc-glass: rgb(255 255 255 / 0.66);
+  --vc-glass-shadow:
+    inset 0 1px 0 #ffffff, inset 0 0 0 0.5px rgb(255 255 255 / 0.9), 0 0 0 0.5px rgb(16 24 40 / 0.08),
+    0 16px 34px -22px rgb(16 24 40 / 0.35);
+  --vc-lens-bg: rgb(255 255 255 / 0.95);
+  --vc-lens-shadow: 0 0 0 0.5px rgb(16 24 40 / 0.08), 0 6px 16px -6px rgb(16 24 40 / 0.3);
+  --vc-tip-bg: rgb(255 255 255 / 0.96);
+  --vc-tip-ink: #1d1d1f;
+  --vc-tip-shadow: 0 0 0 0.5px rgb(16 24 40 / 0.1), 0 8px 20px -8px rgb(16 24 40 / 0.3);
+
+  --vc-btn: linear-gradient(180deg, #ffffff, rgb(247 248 250));
+  --vc-btn-shadow: inset 0 1px 0 #ffffff, inset 0 -1px 0 rgb(16 24 40 / 0.04);
+  --vc-btn-ink: #1d1d1f;
+  --vc-btn-sub: rgb(29 29 31 / 0.6);
+  --vc-btn-chip: rgb(16 24 40 / 0.045);
+  --vc-btn-chip-ring: rgb(16 24 40 / 0.06);
+  --vc-avatar: oklch(0.95 0.045 152);
+  --vc-avatar-ring: oklch(0.85 0.08 152 / 0.6);
+  --vc-halo: 0.38;
+}
+
+html:has(.vc-page) body {
+  background: #000000;
+}
+:root[data-theme="light"]:has(.vc-page) body {
+  background: #f2f3f5;
+}
+
+/* ── Stage: one soft light from above, a faint glow where the card hangs,
+      and a little grain so the dark never bands. ─────────────────────── */
+
+.vc-page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(70% 46% at 50% -8%, var(--vc-spot), transparent 72%),
+    radial-gradient(46% 30% at 50% 38%, var(--vc-aura), transparent 72%);
+}
+.vc-page::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: var(--vc-grain);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.vc-topbar {
+  position: absolute;
+  top: max(0.875rem, env(safe-area-inset-top));
+  right: 0.875rem;
+  z-index: 5;
+}
+.vc-theme {
+  background: var(--vc-glass);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  backdrop-filter: blur(16px) saturate(180%);
+  box-shadow: var(--vc-glass-shadow);
+  color: var(--vc-ink-2);
+}
+
+/* ── Layout ──────────────────────────────────────────────────────────────── */
+
+.vc-root {
+  flex: 1;
+  width: 100%;
+  max-width: 27rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(1.75rem, 4.5vh, 2.5rem);
+  padding: clamp(4.5rem, 10vh, 6rem) 1.25rem 1.5rem;
+}
+@media (min-width: 40rem) {
+  .vc-root {
+    max-width: 29rem;
+  }
+}
+.vc-scene {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1.5rem;
+}
+.vc-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1.25rem;
+}
+
+/* ── The card ────────────────────────────────────────────────────────────── */
+
+.vc-stage {
+  position: relative;
+  aspect-ratio: 1.586;
+  container-type: inline-size;
+}
+
+.vc-face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 5.4cqw;
+  background: var(--vc-card);
+  -webkit-backdrop-filter: blur(28px) saturate(150%);
+  backdrop-filter: blur(28px) saturate(150%);
+  box-shadow: var(--vc-card-shadow);
+  color: var(--vc-ink);
+  transform: perspective(1200px) rotateX(var(--vc-rx, 0deg)) rotateY(calc(var(--vc-ry, 0deg) + var(--vc-face, 0deg)));
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.vc-back {
+  --vc-face: 180deg;
+}
+
+/* The edge: a hairline lit from the top-left, fading around. */
+.vc-face::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  border-radius: inherit;
+  padding: 0.75px;
+  background: linear-gradient(
+    135deg,
+    var(--vc-rim),
+    transparent 30%,
+    transparent 68%,
+    color-mix(in srgb, var(--vc-rim) 45%, transparent)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Light on the glass, which moves as the card turns. */
+.vc-glare {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(52% 44% at var(--vc-gx, 28%) var(--vc-gy, 18%), var(--vc-glare), transparent 70%),
+    linear-gradient(
+      115deg,
+      transparent calc(var(--vc-gx, 28%) - 22%),
+      color-mix(in srgb, var(--vc-glare) 55%, transparent) var(--vc-gx, 28%),
+      transparent calc(var(--vc-gx, 28%) + 22%)
+    );
+}
+.vc-back .vc-glare {
+  background:
+    radial-gradient(52% 44% at calc(100% - var(--vc-gx, 28%)) var(--vc-gy, 18%), var(--vc-glare), transparent 70%),
+    linear-gradient(
+      115deg,
+      transparent calc(78% - var(--vc-gx, 28%)),
+      color-mix(in srgb, var(--vc-glare) 55%, transparent) calc(100% - var(--vc-gx, 28%)),
+      transparent calc(122% - var(--vc-gx, 28%))
+    );
+}
+/* The face darkens as it turns edge-on. */
+.vc-shade {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: #000;
+  opacity: calc(var(--vc-edge, 0) * var(--vc-shade));
+}
+
+/* The brand mark, engraved large into the glass and cropped by the edge:
+   a recess, a lit lip below it, and a glint that follows the light. */
+.vc-engrave {
+  position: absolute;
+  z-index: 1;
+  width: 60cqw;
+  aspect-ratio: 860 / 600;
+  right: -7cqw;
+  bottom: -9cqw;
+  filter: drop-shadow(0 0.7px 0 var(--vc-engrave-lip));
+  pointer-events: none;
+}
+.vc-engrave::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  -webkit-mask: var(--vc-mask) center / contain no-repeat;
+  mask: var(--vc-mask) center / contain no-repeat;
+  background:
+    linear-gradient(
+      115deg,
+      transparent calc(var(--vc-gx, 28%) - 30%),
+      var(--vc-engrave-hi) var(--vc-gx, 28%),
+      transparent calc(var(--vc-gx, 28%) + 30%)
+    ),
+    var(--vc-engrave);
+}
+.vc-back .vc-engrave {
+  right: auto;
+  left: -7cqw;
+  transform: scaleX(-1);
+  opacity: 0.6;
+}
+
+/* Front: the logo and place above, the name and title below. Nothing else. */
+.vc-front {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 6.2cqw 6.6cqw 6.4cqw;
+}
+.vc-front-top,
+.vc-front-id {
+  position: relative;
+  z-index: 5;
+}
+.vc-front-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.vc-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 2cqw;
+  color: var(--vc-ink);
+}
+.vc-logo-mark {
+  width: 8.2cqw;
+}
+.vc-logo-word {
+  width: 22cqw;
+}
+.vc-place {
+  font-size: clamp(0.6rem, 2.55cqw, 0.72rem);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--vc-ink-2);
+}
+.vc-name {
+  margin: 0;
+  font-size: clamp(1.35rem, 7.6cqw, 2.3rem);
+  font-weight: 600;
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  color: var(--vc-name);
+}
+/* The name catches the light like a foil, as the card turns. */
+:root[data-js] .vc-name {
+  background: linear-gradient(
+    100deg,
+    var(--vc-name) calc(var(--vc-gx, -60%) - 34%),
+    var(--vc-shine) var(--vc-gx, -60%),
+    var(--vc-name) calc(var(--vc-gx, -60%) + 34%)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.vc-title {
+  margin: 1.5cqw 0 0;
+  font-size: clamp(0.85rem, 3.9cqw, 1.15rem);
+  font-weight: 450;
+  letter-spacing: -0.005em;
+  color: var(--vc-ink-2);
+}
+
+/* Back: the code to scan, and the details for anyone reading over it. */
+.vc-back {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 5.6cqw;
+  padding: 6.2cqw 6.6cqw;
+}
+.vc-qr {
+  position: relative;
+  z-index: 5;
+  padding: 2.2cqw;
+  border-radius: 3.6cqw;
+  background: #ffffff;
+  box-shadow:
+    0 0 0 0.5px rgb(16 24 40 / 0.1),
+    0 10px 24px -12px rgb(0 0 0 / 0.45);
+}
+.vc-qr img {
+  display: block;
+  width: 31cqw;
+  height: 31cqw;
+}
+.vc-back-text {
+  position: relative;
+  z-index: 5;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.vc-kicker {
+  margin: 0 0 2.4cqw;
+  font-size: clamp(0.6rem, 2.55cqw, 0.72rem);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--vc-accent);
+}
+.vc-lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: clamp(0.72rem, 3.5cqw, 0.98rem);
+  font-weight: 500;
+  line-height: 1.55;
+  letter-spacing: -0.005em;
+  overflow-wrap: anywhere;
+}
+.vc-url {
+  margin: 2.4cqw 0 0;
+  font-size: clamp(0.6rem, 2.7cqw, 0.76rem);
+  color: var(--vc-ink-2);
+}
+
+/* The light the card throws on the surface below: it narrows as the card
+   turns edge-on and slides the other way. */
+.vc-floor {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: -13%;
+  height: 20%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--vc-floor), transparent);
+  filter: blur(12px);
+  transform: translateX(calc(var(--vc-sin, 0) * -14%)) scaleX(calc(0.3 + 0.7 * var(--vc-cos, 1)));
+  pointer-events: none;
+}
+
+/* The card is one button: tap to turn it; swipe sideways to throw it. */
+.vc-hit {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  border: 0;
+  padding: 0;
+  border-radius: 5.4cqw;
+  background: transparent;
+  cursor: pointer;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.vc-hit:active {
+  cursor: grabbing;
+}
+.vc-hit:focus-visible {
+  outline: 2px solid var(--vc-accent);
+  outline-offset: 5px;
+}
+
+.vc-hint {
+  margin: 0;
+  text-align: center;
+  font-size: 0.8125rem;
+  letter-spacing: -0.005em;
+  color: var(--vc-ink-2);
+}
+:root:not([data-js]) .vc-hint {
+  visibility: hidden;
+}
+
+/* ── Save contact ────────────────────────────────────────────────────────── */
+
+.vc-save {
+  position: relative;
+  isolation: isolate;
+  display: block;
+  border-radius: 999px;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+/* The moving edge: a ring of the brand's greens and the sky around them,
+   and the same colours as a soft halo underneath. */
+.vc-save-ring,
+.vc-save-halo {
+  position: absolute;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--vc-spin),
+    #2bda75,
+    #8af5c4 18%,
+    #5ac8fa 36%,
+    #c4f07a 54%,
+    #34e08a 72%,
+    #7fe3ff 88%,
+    #2bda75
+  );
+  pointer-events: none;
+}
+.vc-save-ring {
+  inset: -1.5px;
+  z-index: 2;
+  padding: 1.5px;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+.vc-save-halo {
+  inset: 10% 6% -14%;
+  z-index: -1;
+  filter: blur(18px);
+  opacity: var(--vc-halo);
+  transition:
+    opacity 500ms ease,
+    transform 700ms var(--ease-spring);
+}
+.vc-save-body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  min-height: 4rem;
+  padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+  border-radius: inherit;
+  background: var(--vc-btn);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  color: var(--vc-btn-ink);
+  box-shadow: var(--vc-btn-shadow);
+  transition: transform var(--dur-spring-snappy) var(--ease-spring);
+}
+.vc-save-avatar {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  flex: none;
+  border-radius: 50%;
+  background: var(--vc-avatar);
+  box-shadow: inset 0 0 0 0.5px var(--vc-avatar-ring);
+}
+.vc-save-mark {
+  width: 1.75rem;
+}
+.vc-save-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.0625rem;
+  text-align: center;
+}
+.vc-save-title {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+.vc-save-sub {
+  font-size: 0.8125rem;
+  color: var(--vc-btn-sub);
+  line-height: 1.25;
+}
+.vc-save-icon {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  flex: none;
+  border-radius: 50%;
+  background: var(--vc-btn-chip);
+  box-shadow: inset 0 0 0 0.5px var(--vc-btn-chip-ring);
+  transition:
+    background-color 300ms ease,
+    color 300ms ease;
+}
+.vc-save-icon svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  overflow: visible;
+}
+.vc-save-icon path {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    transform 450ms var(--ease-spring),
+    opacity 200ms ease,
+    stroke-dashoffset 450ms cubic-bezier(0.65, 0, 0.35, 1) 120ms;
+}
+.vc-check {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+/* Saved: the plus folds away into a tick on a green chip. */
+.vc-save[data-saved] .vc-save-icon {
+  background: var(--vc-accent);
+  color: #04140b;
+}
+:root[data-theme="light"] .vc-save[data-saved] .vc-save-icon {
+  color: #ffffff;
+}
+.vc-save[data-saved] .vc-plus-v {
+  transform: rotate(90deg) scale(0);
+  opacity: 0;
+}
+.vc-save[data-saved] .vc-plus-h {
+  transform: rotate(90deg) scale(0);
+  opacity: 0;
+}
+.vc-save[data-saved] .vc-check {
+  stroke-dashoffset: 0;
+}
+.vc-save[data-saved] .vc-save-halo {
+  opacity: calc(var(--vc-halo) + 0.35);
+  transform: scale(1.06);
+}
+.vc-save:active .vc-save-body {
+  transform: scale(0.975);
+}
+@media (hover: hover) and (pointer: fine) {
+  .vc-save:hover .vc-save-halo {
+    opacity: calc(var(--vc-halo) + 0.2);
+  }
+}
+.vc-save:focus-visible {
+  outline: 2px solid var(--vc-accent);
+  outline-offset: 4px;
+}
+
+/* ── Dock: call, email, LinkedIn ─────────────────────────────────────────── */
+
+.vc-dock {
+  --vc-btn-size: 3.5rem;
+  --vc-gap: 0.25rem;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--vc-n, 3), var(--vc-btn-size));
+  gap: var(--vc-gap);
+  align-self: center;
+  margin: 0;
+  padding: 0.375rem;
+  list-style: none;
+  border-radius: 999px;
+  background: var(--vc-glass);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: var(--vc-glass-shadow);
+}
+/* The lens: a drop of brighter glass that slides to the control in use. */
+.vc-dock::before {
+  content: "";
+  position: absolute;
+  top: 0.375rem;
+  left: 0.375rem;
+  width: var(--vc-btn-size);
+  height: var(--vc-btn-size);
+  border-radius: 50%;
+  background: var(--vc-lens-bg);
+  box-shadow: var(--vc-lens-shadow);
+  opacity: 0;
+  transform: translateX(calc(var(--vc-lens, 1) * (var(--vc-btn-size) + var(--vc-gap)))) scale(0.6);
+  transition:
+    transform 520ms var(--ease-spring),
+    opacity 220ms ease;
+  pointer-events: none;
+}
+.vc-dock[data-lens]::before {
+  opacity: 1;
+  transform: translateX(calc(var(--vc-lens, 1) * (var(--vc-btn-size) + var(--vc-gap)))) scale(1);
+}
+.vc-dock[data-pressed]::before {
+  transform: translateX(calc(var(--vc-lens, 1) * (var(--vc-btn-size) + var(--vc-gap)))) scale(1.14);
+}
+.vc-dock-item {
+  position: relative;
+}
+.vc-dock-btn {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: var(--vc-btn-size);
+  height: var(--vc-btn-size);
+  border-radius: 50%;
+  color: var(--vc-ink);
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+.vc-dock-btn svg {
+  transition:
+    transform 420ms var(--ease-spring),
+    color 200ms ease;
+}
+.vc-dock-item[data-on] .vc-dock-btn svg {
+  transform: scale(1.12);
+}
+.vc-dock[data-pressed] .vc-dock-item[data-on] .vc-dock-btn svg {
+  transform: scale(1.22);
+}
+.vc-dock-btn:focus-visible {
+  box-shadow: 0 0 0 2px var(--vc-accent);
+}
+/* Each control names itself below the lens. */
+.vc-dock-label {
+  position: absolute;
+  top: calc(100% + 0.875rem);
+  left: 50%;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  background: var(--vc-tip-bg);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  backdrop-filter: blur(16px) saturate(170%);
+  box-shadow: var(--vc-tip-shadow);
+  color: var(--vc-tip-ink);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, -0.4rem) scale(0.9);
+  transition:
+    opacity 180ms ease,
+    transform 380ms var(--ease-spring);
+  pointer-events: none;
+}
+.vc-dock-item[data-on] .vc-dock-label {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+
+.vc-footer {
+  padding: 0 1rem max(1.25rem, env(safe-area-inset-bottom));
+}
+.vc-footer a {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--vc-ink-2);
+  text-decoration: none;
+  border-radius: 0.25rem;
+  transition: color 200ms ease;
+}
+.vc-footer a:hover {
+  color: var(--vc-ink);
+}
+.vc-footer a:focus-visible {
+  outline: 2px solid var(--vc-accent);
+  outline-offset: 3px;
+}
+
+/* ── Motion ──────────────────────────────────────────────────────────────── */
+
+:root[data-js][data-motion="full"] {
+  & .vc-page::before {
+    animation: vc-fade 1400ms ease both;
+  }
+  /* The card arrives; the spring in the script swings it square. */
+  & .vc-stage {
+    animation: vc-arrive 1000ms cubic-bezier(0.16, 1, 0.3, 1) 60ms both;
+  }
+  & .vc-hint {
+    animation: vc-fade 700ms ease 700ms both;
+  }
+  & .vc-save {
+    animation: vc-rise 800ms cubic-bezier(0.16, 1, 0.3, 1) 320ms both;
+  }
+  & .vc-dock {
+    animation: vc-rise 800ms cubic-bezier(0.16, 1, 0.3, 1) 440ms both;
+  }
+  & .vc-topbar,
+  & .vc-footer {
+    animation: vc-fade 900ms ease 800ms both;
+  }
+  & .vc-save-ring,
+  & .vc-save-halo {
+    animation: vc-spin 7s linear infinite;
+  }
+}
+
+@keyframes vc-spin {
+  to {
+    --vc-spin: 360deg;
+  }
+}
+@keyframes vc-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes vc-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(32px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes vc-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── Backdrop: the Kathmandu Valley in contours
+      (components/card/valley-backdrop.tsx) ─────────────────────────────── */
+
+.vc-page {
+  --vc-line: rgb(255 255 255 / 0.07);
+  --vc-line-acc: oklch(0.84 0.19 150 / 0.3);
+  --vc-line-glow: oklch(0.84 0.19 150 / 0.5);
+  --vc-line-lit: rgb(255 255 255 / 0.42);
+}
+:root[data-theme="light"] .vc-page {
+  --vc-line: rgb(16 24 40 / 0.1);
+  --vc-line-acc: oklch(0.52 0.14 152 / 0.38);
+  --vc-line-glow: oklch(0.52 0.14 152 / 0.45);
+  --vc-line-lit: oklch(0.55 0.12 160 / 0.5);
+}
+
+.vc-valley {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.vc-valley svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke-linejoin: round;
+}
+/* Strokes are set on each copy and inherited by its lines (clones in a
+   <use> take their colours from it), the one accent level included. */
+.vc-valley-base {
+  stroke: var(--vc-line);
+  stroke-width: 0.8;
+  --vc-acc: var(--vc-line-acc);
+  -webkit-mask-image: radial-gradient(130% 95% at 50% 42%, #000 45%, transparent 100%);
+  mask-image: radial-gradient(130% 95% at 50% 42%, #000 45%, transparent 100%);
+}
+.vc-valley [data-accent] {
+  stroke: var(--vc-acc);
+}
+.vc-valley-glow {
+  stroke: var(--vc-line-glow);
+  --vc-acc: var(--vc-line-glow);
+  stroke-width: 1;
+  -webkit-mask-image: radial-gradient(42% 26% at 50% 40%, #000, transparent 78%);
+  mask-image: radial-gradient(42% 26% at 50% 40%, #000, transparent 78%);
+}
+.vc-valley-lit {
+  stroke: var(--vc-line-lit);
+  --vc-acc: var(--vc-line-lit);
+  stroke-width: 1;
+}
+
+/* The sweep: a band of light crossing the screen without a break. It
+   travels exactly from just off the left edge to just off the right
+   (170vw: the screen plus its own 70vw), so the next pass enters as the
+   last one leaves. The band moves right and its contents left by the same
+   amount, so the lit lines stay registered with the base. */
+.vc-sweep {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.vc-sweep-band {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -70vw;
+  width: 70vw;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 50%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 50%, transparent);
+}
+.vc-sweep-inner {
+  position: absolute;
+  top: 0;
+  left: 70vw;
+  width: 100vw;
+  height: 100%;
+}
+.vc-sweep-inner > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+:root:not([data-motion="full"]) .vc-sweep {
+  display: none;
+}
+:root[data-motion="full"] {
+  & .vc-sweep-band {
+    animation: vc-band 5s linear infinite;
+  }
+  & .vc-sweep-inner {
+    animation: vc-band-counter 5s linear infinite;
+  }
+  & .vc-valley-glow {
+    animation: vc-breathe 7s ease-in-out infinite;
+  }
+  & .vc-valley {
+    animation: vc-fade 1600ms ease 200ms both;
+  }
+}
+@keyframes vc-band {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(170vw);
+  }
+}
+@keyframes vc-band-counter {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-170vw);
+  }
+}
+@keyframes vc-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
