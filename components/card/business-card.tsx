@@ -17,31 +17,54 @@
  * Each face is its own 3D-transformed element (no preserve-3d), so each
  * keeps its backdrop blur. All motion goes through CSS variables written on
  * one frame loop. Reduced motion (the OS or the site's toggle): the card
- * sits still and turns over at once. Without scripting: a still card whose
- * links all work. Styles: app/card/card.css.
+ * sits still and turns over at once.
+ *
+ * The phone number, email and contact file arrive sealed (./seal.ts) and
+ * are unsealed on the visitor's first touch, click or key press, so the
+ * page as served, or as a bot sees it after loading, holds none of them.
+ * Until then their lines are blank and their links lead nowhere; a press
+ * that somehow comes first unseals and follows the link itself. Without
+ * scripting the card shows, but call, email and save do not work.
+ * Styles: app/card/card.css.
  */
 import { useEffect, useRef, useState } from "react";
 import { Brandmark, Wordmark } from "@/components/brand/logo";
 import { Icon, type IconName } from "@/components/ui/icon";
+import { unseal } from "./seal";
+
+interface Contact {
+  phone: string;
+  phoneLabel: string;
+  email: string;
+  /** Contact file (.vcf), with the base path. */
+  vcard: string;
+}
 
 export interface CardPerson {
   name: string;
   title: string;
   org: string;
   location: string;
-  phone: string;
-  phoneLabel: string;
-  email: string;
   linkedin: string;
   linkedinLabel: string;
-  /** Contact file (.vcf), with the base path. */
-  vcard: string;
+  /** Phone, email and contact file, each sealed with ./seal.ts. */
+  sealed: Contact;
   /** QR code image that opens this card, with the base path. */
   qr: string;
   /** The brand mark as a mask image, with the base path. */
   markMask: string;
   urlLabel: string;
 }
+
+const open = (s: Contact): Contact => ({
+  phone: unseal(s.phone),
+  phoneLabel: unseal(s.phoneLabel),
+  email: unseal(s.email),
+  vcard: unseal(s.vcard),
+});
+
+/* What a visitor does first (never a page's own script, nor hovering). */
+const FIRST_TOUCH = ["pointerdown", "touchstart", "keydown"] as const;
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const RAD = Math.PI / 180;
@@ -58,6 +81,30 @@ export function BusinessCard({ person: p }: { person: CardPerson }) {
   const [back, setBack] = useState(false);
   const [saved, setSaved] = useState(false);
   const savedTimer = useRef(0);
+  const [contact, setContact] = useState<Contact | null>(null);
+  const sealed = p.sealed;
+
+  useEffect(() => {
+    if (contact) return;
+    const reveal = (e: Event) => {
+      if (e.isTrusted) setContact(open(sealed));
+    };
+    const opts = { capture: true, passive: true } as const;
+    for (const t of FIRST_TOUCH) window.addEventListener(t, reveal, opts);
+    return () => {
+      for (const t of FIRST_TOUCH) window.removeEventListener(t, reveal, opts);
+    };
+  }, [contact, sealed]);
+
+  /* A press that reached a link before anything unsealed it (a screen
+     reader's activation can arrive as a bare click). */
+  const follow = (e: React.MouseEvent, to: (c: Contact) => string) => {
+    if (contact) return;
+    e.preventDefault();
+    const c = open(sealed);
+    setContact(c);
+    window.location.href = to(c);
+  };
 
   useEffect(() => {
     const card = stage.current;
@@ -304,8 +351,8 @@ export function BusinessCard({ person: p }: { person: CardPerson }) {
             <div className="vc-back-text">
               <p className="vc-kicker">Scan to connect</p>
               <ul className="vc-lines">
-                <li>{p.phoneLabel}</li>
-                <li>{p.email}</li>
+                <li>{contact?.phoneLabel ?? "\u00a0"}</li>
+                <li>{contact?.email ?? "\u00a0"}</li>
                 <li>{p.linkedinLabel}</li>
               </ul>
               <p className="vc-url">{p.urlLabel}</p>
@@ -328,11 +375,14 @@ export function BusinessCard({ person: p }: { person: CardPerson }) {
 
       <div className="vc-actions">
         <a
-          href={p.vcard}
+          href={contact?.vcard ?? "#"}
           type="text/vcard"
           className="vc-save"
           data-saved={saved ? "" : undefined}
-          onClick={onSave}
+          onClick={(e) => {
+            follow(e, (c) => c.vcard);
+            onSave();
+          }}
         >
           <span className="vc-save-halo" aria-hidden="true" />
           <span className="vc-save-ring" aria-hidden="true" />
@@ -356,8 +406,20 @@ export function BusinessCard({ person: p }: { person: CardPerson }) {
 
         <Dock
           items={[
-            { href: `tel:${p.phone}`, icon: "phone", label: "Call", aria: `Call ${p.phoneLabel}` },
-            { href: `mailto:${p.email}`, icon: "mail", label: "Email", aria: `Email ${p.email}` },
+            {
+              href: contact ? `tel:${contact.phone}` : "#",
+              onClick: (e) => follow(e, (c) => `tel:${c.phone}`),
+              icon: "phone",
+              label: "Call",
+              aria: contact ? `Call ${contact.phoneLabel}` : "Call",
+            },
+            {
+              href: contact ? `mailto:${contact.email}` : "#",
+              onClick: (e) => follow(e, (c) => `mailto:${c.email}`),
+              icon: "mail",
+              label: "Email",
+              aria: contact ? `Email ${contact.email}` : "Email",
+            },
             { href: p.linkedin, icon: "linkedin", label: "LinkedIn", aria: `LinkedIn: ${p.linkedinLabel}`, external: true },
           ]}
         />
@@ -373,6 +435,7 @@ function Engraving({ mask }: { mask: string }) {
 
 interface DockItem {
   href: string;
+  onClick?: (e: React.MouseEvent) => void;
   icon: IconName;
   label: string;
   aria: string;
@@ -428,6 +491,7 @@ function Dock({ items }: { items: DockItem[] }) {
             href={it.href}
             aria-label={it.aria}
             className="vc-dock-btn"
+            onClick={it.onClick}
             onFocus={() => setLens(i)}
             onBlur={() => setLens(null)}
             {...(it.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}

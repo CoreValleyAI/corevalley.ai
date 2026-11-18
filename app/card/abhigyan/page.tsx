@@ -1,39 +1,19 @@
 import type { Metadata } from "next";
-import { BusinessCard, type CardPerson } from "@/components/card/business-card";
+import { BusinessCard } from "@/components/card/business-card";
 import { ValleyBackdrop } from "@/components/card/valley-backdrop";
 import { ThemeToggle } from "@/components/chrome/theme-toggle";
-import { asset } from "@/lib/links";
-import { absoluteUrl, ORG } from "@/lib/site";
+import { absoluteUrl } from "@/lib/site";
 import { STORAGE, THEME_COLOR } from "@/lib/theme";
 import "../card.css";
+import { PERSON } from "./person";
 
 /* Abhigyan Golchha's digital business card at /card/abhigyan/. A standalone
    page, outside the marketing layout (no site header or footer). Shared by
-   link or QR code, so it is kept out of search and out of the sitemap.
-
-   The contact file and QR code are static files in public/card/. If a
-   detail here changes, edit abhigyan-golchha.vcf to match (vCard 3.0, CRLF
-   line endings; PHOTO is app/apple-icon.png in base64). The QR code encodes
-   the page URL and was made with:
-     qrencode -t SVG --svg-path -m 0 -l M -o public/card/abhigyan-qr.svg URL */
+   link or QR code, so it is kept out of search and out of the sitemap. The
+   card's details, and how its phone and email are kept from harvesters,
+   are in ./person.ts. */
 
 const PATH = "/card/abhigyan";
-
-const PERSON: CardPerson = {
-  name: "Abhigyan Golchha",
-  title: "Managing Director",
-  org: ORG.name,
-  location: `${ORG.locality}, ${ORG.countryName}`,
-  phone: "+9779801922288",
-  phoneLabel: "+977 980-1922288",
-  email: "abhigyan@corevalley.ai",
-  linkedin: "https://www.linkedin.com/in/abhigyang/",
-  linkedinLabel: "in/abhigyang",
-  vcard: asset("/card/abhigyan-golchha.vcf"),
-  qr: asset("/card/abhigyan-qr.svg"),
-  markMask: asset("/brand/brandmark-mask.svg"),
-  urlLabel: "corevalley.ai/card/abhigyan",
-};
 
 export const metadata: Metadata = {
   title: { absolute: `${PERSON.name} · ${PERSON.title}, ${PERSON.org}` },
