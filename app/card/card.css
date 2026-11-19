@@ -385,28 +385,31 @@ html:has(.vc-page) body {
   color: var(--vc-ink-2);
 }
 
-/* Back: the code to scan, and the details for anyone reading over it. */
+/* Back: the contact as a code to scan, and the details for anyone reading
+   over it. The code is as large as the details beside it allow, its white
+   margin four modules wide (the quiet zone scanners look for). */
 .vc-back {
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: center;
-  gap: 5.6cqw;
+  gap: 4.6cqw;
   padding: 6.2cqw 6.6cqw;
 }
 .vc-qr {
   position: relative;
   z-index: 5;
-  padding: 2.2cqw;
+  padding: 2.8cqw;
   border-radius: 3.6cqw;
   background: #ffffff;
   box-shadow:
     0 0 0 0.5px rgb(16 24 40 / 0.1),
     0 10px 24px -12px rgb(0 0 0 / 0.45);
 }
-.vc-qr img {
+.vc-qr-code {
   display: block;
-  width: 31cqw;
-  height: 31cqw;
+  width: 36cqw;
+  height: 36cqw;
+  fill: #000000;
 }
 .vc-back-text {
   position: relative;

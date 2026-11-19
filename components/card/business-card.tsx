@@ -7,9 +7,10 @@
  *
  *   Card     follows the pointer, or the phone's tilt where the browser
  *            allows it without a prompt, and floats on its own otherwise.
- *            Tap, or swipe it like a real card, to turn it over to the QR
- *            code. The turn is a spring, so it keeps the swipe's momentum
- *            and can be caught and reversed mid-air.
+ *            Tap, or swipe it like a real card, to turn it over to a QR
+ *            code that holds the contact: a phone's camera offers to add
+ *            it to Contacts on sight. The turn is a spring, so it keeps the
+ *            swipe's momentum and can be caught and reversed mid-air.
  *   Save     the contact file, under an edge of moving light.
  *   Dock     call, email, LinkedIn: a capsule of glass with a lens that
  *            slides to the control under the finger or pointer.
@@ -19,17 +20,19 @@
  * one frame loop. Reduced motion (the OS or the site's toggle): the card
  * sits still and turns over at once.
  *
- * The phone number, email and contact file arrive sealed (./seal.ts) and
- * are unsealed on the visitor's first touch, click or key press, so the
- * page as served, or as a bot sees it after loading, holds none of them.
- * Until then their lines are blank and their links lead nowhere; a press
- * that somehow comes first unseals and follows the link itself. Without
- * scripting the card shows, but call, email and save do not work.
+ * The phone number, email, contact file and QR code's contact arrive
+ * sealed (./seal.ts) and are unsealed on the visitor's first touch, click
+ * or key press, so the page as served, or as a bot sees it after loading,
+ * holds none of them. Until then their lines and the code are blank and
+ * their links lead nowhere; a press on a link that comes first unseals and
+ * follows it itself. Without scripting the card shows, but call, email,
+ * save and the code do not work.
  * Styles: app/card/card.css.
  */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Brandmark, Wordmark } from "@/components/brand/logo";
 import { Icon, type IconName } from "@/components/ui/icon";
+import { qrEncode, qrPath } from "./qr";
 import { unseal } from "./seal";
 
 interface Contact {
@@ -38,6 +41,8 @@ interface Contact {
   email: string;
   /** Contact file (.vcf), with the base path. */
   vcard: string;
+  /** The contact as the QR code holds it (./vcard.ts, vcardQr). */
+  qr: string;
 }
 
 export interface CardPerson {
@@ -47,10 +52,9 @@ export interface CardPerson {
   location: string;
   linkedin: string;
   linkedinLabel: string;
-  /** Phone, email and contact file, each sealed with ./seal.ts. */
+  /** Phone, email, contact file and the QR code's contact, each sealed
+   *  with ./seal.ts. */
   sealed: Contact;
-  /** QR code image that opens this card, with the base path. */
-  qr: string;
   /** The brand mark as a mask image, with the base path. */
   markMask: string;
   urlLabel: string;
@@ -61,10 +65,12 @@ const open = (s: Contact): Contact => ({
   phoneLabel: unseal(s.phoneLabel),
   email: unseal(s.email),
   vcard: unseal(s.vcard),
+  qr: unseal(s.qr),
 });
 
-/* What a visitor does first (never a page's own script, nor hovering). */
-const FIRST_TOUCH = ["pointerdown", "touchstart", "keydown"] as const;
+/* What a visitor does first (never a page's own script, nor hovering). A
+   bare click is a screen reader turning the card. */
+const FIRST_TOUCH = ["pointerdown", "touchstart", "keydown", "click"] as const;
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const RAD = Math.PI / 180;
@@ -345,11 +351,10 @@ export function BusinessCard({ person: p }: { person: CardPerson }) {
             <div className="vc-glare" aria-hidden="true" />
             <div className="vc-shade" aria-hidden="true" />
             <div className="vc-qr">
-              {/* A plain <img>: the site is a static export. */}
-              <img src={p.qr} alt={`QR code that opens ${p.name}'s card`} width={160} height={160} />
+              <ContactQr text={contact?.qr} name={p.name} />
             </div>
             <div className="vc-back-text">
-              <p className="vc-kicker">Scan to connect</p>
+              <p className="vc-kicker">Scan to save</p>
               <ul className="vc-lines">
                 <li>{contact?.phoneLabel ?? "\u00a0"}</li>
                 <li>{contact?.email ?? "\u00a0"}</li>
@@ -369,7 +374,7 @@ export function BusinessCard({ person: p }: { person: CardPerson }) {
         </div>
 
         <p className="vc-hint" aria-hidden="true">
-          {back ? "Scan the code to open this card" : "Tap or swipe the card to turn it over"}
+          {back ? "Scan with a camera to save the contact" : "Tap or swipe the card to turn it over"}
         </p>
       </div>
 
@@ -425,6 +430,24 @@ export function BusinessCard({ person: p }: { person: CardPerson }) {
         />
       </div>
     </div>
+  );
+}
+
+/** The contact as a QR code, drawn once it is unsealed. A phone's camera
+ *  reads it and offers to add the contact, with no page or file between. */
+function ContactQr({ text, name }: { text: string | undefined; name: string }) {
+  const rows = useMemo(() => (text ? qrEncode(text) : null), [text]);
+  if (!rows) return <span className="vc-qr-code" aria-hidden="true" />;
+  return (
+    <svg
+      className="vc-qr-code"
+      viewBox={`0 0 ${rows.length} ${rows.length}`}
+      role="img"
+      aria-label={`QR code that saves ${name}'s contact`}
+      shapeRendering="crispEdges"
+    >
+      <path d={qrPath(rows)} />
+    </svg>
   );
 }
 
